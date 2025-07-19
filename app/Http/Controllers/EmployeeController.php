@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\CodesTb;
-use App\Models\Employee;
 use App\Models\customer;
+use App\Models\Employee;
 use Illuminate\Http\Request;
+use App\Exports\EmployeesExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class EmployeeController extends Controller
 {
@@ -20,20 +22,38 @@ class EmployeeController extends Controller
 
     public function index(Request $request)
     {
-        $query = Employee::query();
+        $search = $request->input('search');
 
-        if ($request->filled('search')) {
-            $query->where('name', 'like', '%' . $request->search . '%')
-                ->orWhere('id_card', 'like', '%' . $request->search . '%');
-        }
+        $employees = Employee::when($search, function ($query, $search) {
+            $query->where('name', 'like', "%{$search}%")
+            ->orWhere('id_card', 'like', "%{$search}%")
+            ->orWhere('phone', 'like', "%{$search}%");
+        })->paginate(8); // حدد عدد العناصر في كل صفحة
 
-        $employees = $query->orderBy('id')->paginate(8)->appends($request->all());
-
+        // إذا كان الطلب AJAX نعيد جزء الـ Table فقط
         if ($request->ajax()) {
             return view('employee._table', compact('employees'))->render();
         }
 
+        // أما إذا كان تحميل الصفحة عادي
         return view('employee.index', compact('employees'));
+    }
+
+    public function export(Request $request)
+    {
+        $search = $request->input('search');
+
+        $employees = Employee::when($search, function ($query, $search) {
+            $query->where('name', 'like', "%{$search}%")
+            ->orWhere('id_card', 'like', "%{$search}%")
+            ->orWhere('phone', 'like', "%{$search}%");
+        })->get();
+
+        if ($employees->isEmpty()) {
+            return redirect()->back()->with('error', 'لا توجد بيانات لتصديرها.');
+        }
+
+        return Excel::download(new employeesExport($search), 'employees.xlsx');
     }
 
     /**

@@ -3,35 +3,49 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
-use App\Models\ProductCategory;
 use Illuminate\Http\Request;
+use App\Exports\PosBillsExport;
+use App\Exports\ProductsExport;
+use App\Models\ProductCategory;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ProductController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    // public function index()
-    // {
-    //     $products=Product::orderBy('id', 'desc')->paginate(8);
-    //     return view('product.index',['products'=>$products]);
-    // }
 
     public function index(Request $request)
     {
-        $query = Product::query();
+        $search = $request->input('search');
 
-        if ($request->filled('search')) {
-            $query->where('name', 'like', '%' . $request->search . '%');
-        }
+        $products = Product::with(['productCategory'])
+            ->when($search, function ($query) use ($search) {
+                    $query->where('name', 'like', "%{$search}%")
+                    ->orWhereHas('productCategory', fn($q) => $q->where('name', 'like', "%$search%"));
+        })->paginate(8); // حدد عدد العناصر في كل صفحة
 
-        $products = $query->with('ProductCategory')->orderBy('id')->paginate(8)->appends($request->all());
-
+        // إذا كان الطلب AJAX نعيد جزء الـ Table فقط
         if ($request->ajax()) {
             return view('product._table', compact('products'))->render();
         }
 
+        // أما إذا كان تحميل الصفحة عادي
         return view('product.index', compact('products'));
+    }
+
+    public function export(Request $request)
+    {
+        $search = $request->input('search');
+
+        $products = Product::with(['productCategory'])
+        ->when($search, function ($query) use ($search) {
+            $query->where('name', 'like', "%$search%")
+                ->orWhereHas('productCategory', fn($q) => $q->where('name', 'like', "%$search%"));
+        })->paginate(8);
+
+        if ($products->isEmpty()) {
+            return redirect()->back()->with('error', 'لا توجد بيانات لتصديرها.');
+        }
+
+        return Excel::download(new ProductsExport($search), 'product.xlsx');
     }
 
     /**

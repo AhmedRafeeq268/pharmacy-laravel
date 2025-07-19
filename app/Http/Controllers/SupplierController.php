@@ -5,34 +5,45 @@ namespace App\Http\Controllers;
 use App\Models\CodesTb;
 use App\Models\Supplier;
 use Illuminate\Http\Request;
+use App\Exports\SuppliersExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class SupplierController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    // public function index()
-    // {
-    //     $suppliers = Supplier::orderBy('id', 'desc')->paginate(8);
-    //     return view('suppliers.index',['suppliers'=>$suppliers]);
-    // }
 
     public function index(Request $request)
     {
-        $query = Supplier::query();
+        $search = $request->input('search');
 
-        if ($request->filled('search')) {
-            $query->where('name', 'like', '%' . $request->search . '%')
-                ->orWhere('phone', 'like', '%' . $request->search . '%');
-        }
+        $suppliers = supplier::when($search, function ($query, $search) {
+            $query->where('name', 'like', "%{$search}%")
+            ->orWhere('phone', 'like', "%{$search}%");
+        })->paginate(8); // حدد عدد العناصر في كل صفحة
 
-        $suppliers = $query->orderBy('id')->paginate(8)->appends($request->all());
-
+        // إذا كان الطلب AJAX نعيد جزء الـ Table فقط
         if ($request->ajax()) {
             return view('suppliers._table', compact('suppliers'))->render();
         }
 
+        // أما إذا كان تحميل الصفحة عادي
         return view('suppliers.index', compact('suppliers'));
+    }
+
+
+    public function export(Request $request)
+    {
+        $search = $request->input('search');
+
+        $suppliers = Supplier::when($search, function ($query, $search) {
+            $query->where('name', 'like', "%{$search}%")
+            ->orWhere('phone', 'like', "%{$search}%");
+        })->get();
+
+        if ($suppliers->isEmpty()) {
+            return redirect()->back()->with('error', 'لا توجد بيانات لتصديرها.');
+        }
+
+        return Excel::download(new SuppliersExport($search), 'suppliers.xlsx');
     }
 
     /**

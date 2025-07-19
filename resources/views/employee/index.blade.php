@@ -16,12 +16,20 @@
             </div>
             <!--/End system bath-->
             <div class="w-90 mt-5">
-                <input type="text" id="searchInput" class="form-control w-50 mx-auto mb-3"  placeholder="@lang('messages.employee.search_employee')">
+                <div class="d-flex justify-content-center align-items-center mb-3 gap-2 flex-wrap">
+                    <input type="text" id="searchInput" class="form-control w-50 mb-2" placeholder="@lang('messages.employee.search_employee')">
+
+                    <button id="exportBtn" class="btn btn-success mb-2">
+                        <i class="bi bi-file-earmark-excel"></i>
+                        @lang('messages.employee.export_employees_excel')
+                    </button>
+                </div>
 
                 <div id="employeeTable">
-                    @include('employee._table', ['employees'=>$employees])
+                    @include('employee._table', ['employees' => $employees])
                 </div>
             </div>
+
 
             <div class="quick_links text-center">
                 <a href="{{ route('employee.create') }}" class="btn text-white py-3" style="background-color: #d35400"> <h6 class="mb-0 text-white">@lang('messages.employee.add_new_employee')</h6> </a>
@@ -33,15 +41,15 @@
     </div>
     <!--/End body container section-->
 @endsection
-
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', function () {
         const searchInput = document.getElementById('searchInput');
+        const exportBtn = document.getElementById('exportBtn'); // لازم يكون موجود زر للتصدير بالـ id هذا
 
         searchInput.addEventListener('keyup', function () {
             let search = this.value;
 
-            fetch(`{{ route('employee.index') }}?search=${search}`, {
+            fetch(`{{ route('employee.index') }}?search=${encodeURIComponent(search)}`, {
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest'
                 }
@@ -51,6 +59,25 @@
                 document.getElementById('employeeTable').innerHTML = data;
             });
         });
+
+        exportBtn.addEventListener('click', function () {
+            const search = searchInput.value.trim();
+
+            // تحقق من وجود بيانات في الجدول
+            // مثلا إذا جدول العملاء فيه صفوف <tr> في tbody، أو أي عنصر يعبر عن وجود بيانات
+            const tableBody = document.querySelector('#employeeTable table tbody');
+            if (!tableBody || tableBody.children.length === 0) {
+                alert('لا توجد بيانات لتصديرها.');
+                return;
+            }
+
+            // اذهب للرابط مع تمرير كلمة البحث
+            window.location.href = `{{ route('employee.printEmployeesExcel') }}?search=${encodeURIComponent(search)}`;
+        });
     });
+
 </script>
+
+
+
 

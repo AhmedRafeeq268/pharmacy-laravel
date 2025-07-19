@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\customer;
 use Illuminate\Http\Request;
 
+use App\Exports\CustomersExport;
 use function Laravel\Prompts\select;
+use Maatwebsite\Excel\Facades\Excel;
 
 class customerController extends Controller
 {
@@ -14,22 +16,41 @@ class customerController extends Controller
     //     return view('customer.index',['customers'=>$customers]);
     // }
 
-    public function index(Request $request)
+        public function index(Request $request)
     {
-        $query = customer::query();
+        $search = $request->input('search');
 
-        if ($request->filled('search')) {
-            $query->where('name', 'like', '%' . $request->search . '%')
-                ->orWhere('id_card', 'like', '%' . $request->search . '%');
-        }
+        $customers = Customer::when($search, function ($query, $search) {
+            $query->where('name', 'like', "%{$search}%")
+            ->orWhere('id_card', 'like', "%{$search}%")
+            ->orWhere('phone', 'like', "%{$search}%");
+        })->paginate(8); // حدد عدد العناصر في كل صفحة
 
-        $customers = $query->orderBy('id')->paginate(8)->appends($request->all());
-
+        // إذا كان الطلب AJAX نعيد جزء الـ Table فقط
         if ($request->ajax()) {
             return view('customer._table', compact('customers'))->render();
         }
 
+        // أما إذا كان تحميل الصفحة عادي
         return view('customer.index', compact('customers'));
+    }
+
+
+    public function export(Request $request)
+    {
+        $search = $request->input('search');
+
+        $customers = Customer::when($search, function ($query, $search) {
+            $query->where('name', 'like', "%{$search}%")
+            ->orWhere('id_card', 'like', "%{$search}%")
+            ->orWhere('phone', 'like', "%{$search}%");
+        })->get();
+
+        if ($customers->isEmpty()) {
+            return redirect()->back()->with('error', 'لا توجد بيانات لتصديرها.');
+        }
+
+        return Excel::download(new CustomersExport($search), 'customers.xlsx');
     }
 
 

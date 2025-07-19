@@ -48,4 +48,5 @@
         @endforelse
     </tbody>
 </table>
-{{ $customers->appends(request()->all())->links() }}
+{{ $customers->appends(request()->query())->links() }}
+

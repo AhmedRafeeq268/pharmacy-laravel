@@ -80,7 +80,9 @@ return[
         'address'=>'Address',
         'address_details' => 'Address Details',
         'edit_customer_data' => 'Edit Customer Data',
-        'search_customer' => ' Search Whith Name Or Id Card',
+        'search_customer' => ' Search Whith Name Or Id Card Or Phone Number',
+        'export_customers_excel' => 'Export Customers Data to Excel',
+
 
      ],
 
@@ -98,7 +100,8 @@ return[
         'show_employees' => 'Show Employee Data',
         'select_wallet' => 'Select Wallet Type',
         'edit_employee_data' => 'Edit Employee Data',
-        'search_employee' => ' Search Whith Name Or Id Card',
+        'search_employee' => ' Search Whith Name Or Id Card Or Phone Number',
+        'export_employees_excel' => 'Export Employees Data to Excel',
 
 
 
@@ -118,6 +121,8 @@ return[
         'select_wallet' => 'Select Wallet Type',
         'edit_distributor_data' => 'Edit Distributor Data',
         'search_suppliers' => 'Search by Name or Phone Number',
+        'export_suppliers_excel' => 'Export Suppliers Data To Excel',
+
 
 
     ],
@@ -145,9 +150,11 @@ return[
         'product_image'         => 'Product Image',
         'view_products'         => 'View Products',
         'edit_product'          => 'Edit Product',
-        'search_product' => 'Search Product by Name',
+        'search_product' => 'Search Product by Name Or ProductCategory',
         'unit_price' => 'Unit Price',
         'barcode' => 'Product Number',
+        'export_products_excel' => 'Export Products Date To Excel',
+
 
     ],
 
@@ -167,6 +174,8 @@ return[
         'certified'           => 'Certified',
         'manufacturer'        => 'Manufacturer',
         'search_bill_number' =>'Search The Bill Number',
+        'export_bills_excel' => 'Export Bills Data To Excel',
+
 
     ],
 
@@ -213,6 +222,7 @@ return[
         'search_pos'   =>   'Search by invoice number, customer name, or employee name',
         'pos_number'   =>   'Pos Bill Number',
         'is_closed_with_cashbox' => 'Is losed With Cashbox',
+        'export_posBills_excel' => 'Export PosBills Data to Excel',
 
 
     ],

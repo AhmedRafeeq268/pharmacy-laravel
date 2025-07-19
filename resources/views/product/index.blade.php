@@ -16,12 +16,18 @@
             </div>
             <!--/End system bath-->
             <div class="w-90 mt-5">
-                <input type="text" id="searchInput" class="form-control w-50 mx-auto mb-3"  placeholder="@lang('messages.product.search_product')">
+                <div class="d-flex justify-content-center align-items-center mb-3 gap-2 flex-wrap">
+                    <input type="text" id="searchInput" class="form-control w-50  mb-2"  placeholder="@lang('messages.product.search_product')">
 
-                <div id="productTable">
-                    @include('product._table',['products'=>$products])
+                    <button id="exportBtn" class="btn btn-success mb-2">
+                        <i class="bi bi-file-earmark-excel"></i>
+                        @lang('messages.product.export_products_excel')
+                    </button>
+
                 </div>
-
+                    <div id="productTable">
+                        @include('product._table',['products'=>$products])
+                    </div>
             </div>
             <div class="quick_links text-center">
                 <a href="{{ route('product.create') }}" class="btn text-white py-3" style="background-color: #d35400">
@@ -35,13 +41,14 @@
 @endsection
 
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', function () {
         const searchInput = document.getElementById('searchInput');
+        const exportBtn = document.getElementById('exportBtn'); // لازم يكون موجود زر للتصدير بالـ id هذا
 
         searchInput.addEventListener('keyup', function () {
             let search = this.value;
 
-            fetch(`{{ route('product.index') }}?search=${search}`, {
+            fetch(`{{ route('product.index') }}?search=${encodeURIComponent(search)}`, {
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest'
                 }
@@ -51,6 +58,23 @@
                 document.getElementById('productTable').innerHTML = data;
             });
         });
+
+        exportBtn.addEventListener('click', function () {
+            const search = searchInput.value.trim();
+
+            // تحقق من وجود بيانات في الجدول
+            // مثلا إذا جدول العملاء فيه صفوف <tr> في tbody، أو أي عنصر يعبر عن وجود بيانات
+            const tableBody = document.querySelector('#productTable table tbody');
+            if (!tableBody || tableBody.children.length === 0) {
+                alert('لا توجد بيانات لتصديرها.');
+                return;
+            }
+
+            // اذهب للرابط مع تمرير كلمة البحث
+            window.location.href = `{{ route('product.printProductsExcel') }}?search=${encodeURIComponent(search)}`;
+        });
     });
+
 </script>
+
 

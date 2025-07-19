@@ -1,8 +1,16 @@
 <?php
 
 use App\Models\CodesTb;
+use App\Exports\UsersExport;
+use App\Exports\BosBillsExport;
+use App\Exports\ProductsExport;
 use App\Models\ProductCategory;
+use App\Exports\CustomersExport;
+
+use App\Exports\EmployeesExport;
+use App\Exports\SuppliersExport;
 use Illuminate\Support\Facades\App;
+use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Session;
 use App\Http\Controllers\AuthController;
@@ -30,7 +38,7 @@ Route::get('/toggle-language', function () {
     })->name('toggle.language');
 
     Route::get('locale/{lang}', [LocaleController::class, 'setLocale'])->name('change.language');
-Route::middleware('auth')->group(function () {
+    Route::middleware('auth')->group(function () {
 
     Route::get('/', function () {
         return view('welcome');
@@ -50,6 +58,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/customer/{customer}/edit',[customerController::class,'edit'])->name('customer.edit');
     Route::put('/customer/{customer}',[customerController::class,'update'])->name('customer.update');
     Route::delete('/customer/{customer}',[customerController::class,'destroy'])->name('customer.destroy');
+    Route::get('/customer/export', [CustomerController::class, 'export'])->name('customer.printCustomersExcel');
 
     Route::get('/employee',[EmployeeController::class,'index'])->name('employee.index');
     Route::get('/employee/create',[EmployeeController::class,'create'])->name('employee.create');
@@ -57,6 +66,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/employee/{employee}/edit',[EmployeeController::class,'edit'])->name('employee.edit');
     Route::put('/employee/{employee}',[EmployeeController::class,'update'])->name('employee.update');
     Route::delete('/employee/{employee}',[EmployeeController::class,'destroy'])->name('employee.destroy');
+    Route::get('/employee/export', [EmployeeController::class, 'export'])->name('employee.printEmployeesExcel');
 
     Route::get('/codeTb',[CodesTbController::class,'index'])->name('codeTb.index');
     Route::get('/codeTb/create',[CodesTbController::class,'create'])->name('codeTb.create');
@@ -72,6 +82,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/supplier/{supplier}/edit',[SupplierController::class,'edit'])->name('supplier.edit');
     Route::put('/supplier/{supplier}',[SupplierController::class,'update'])->name('supplier.update');
     Route::delete('/supplier/{supplier}',[SupplierController::class,'destroy'])->name('supplier.destroy');
+    Route::get('/supplier/export', [SupplierController::class, 'export'])->name('supplier.printSuppliersExcel');
 
 
     Route::get('/product',[ProductController::class,'index'])->name('product.index');
@@ -80,6 +91,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/product/{product}/edit',[ProductController::class,'edit'])->name('product.edit');
     Route::put('/product/{product}',[ProductController::class,'update'])->name('product.update');
     Route::delete('/product/{product}',[ProductController::class,'destroy'])->name('product.destroy');
+    Route::get('/product/export', [ProductController::class, 'export'])->name('product.printProductsExcel');
 
 
     Route::get('/productCategory',[ProductCategoryController::class,'index'])->name('productCategory.index');
@@ -118,6 +130,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/pos/finish/{pos_bill_id}', [PosBillController::class, 'finish'])->name('pos.finish');
     Route::post('pos/closeCashbox',[PosBillController::class,'closeCashbox'])->name('pos.closeCashbox');
     Route::get('/pos/print/{id}',[PosBillController::class,'print'])->name('pos.print');
+    Route::get('/pos/export', [PosBillController::class, 'export'])->name('pos.printPosBillsExcel');
+
 
     Route::get('/change-password', [AuthController::class, 'changePasswordForm'])->name('password.change');
     Route::patch('/update-password', [AuthController::class, 'updatePassword'])->name('password.update');
@@ -131,12 +145,39 @@ Route::middleware('auth')->group(function () {
         // Route::get('/admin/users/create', [UserController::class, 'create'])->name('admin.users.create');
         // Route::post('/admin/users', [UserController::class, 'store'])->name('admin.users.store');
         // Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
-});
+
+        // Route::get('/export-users', function () {
+        // return Excel::download(new UsersExport, 'users.xlsx');
+        // })->name('user.printUsersExcel');
+
+        // Route::get('/export-products', function () {
+        // return Excel::download(new ProductsExport, 'product.xlsx');
+        // })->name('product.printProductsExcel');
+
+        // Route::get('/export-customers', function () {
+        // return Excel::download(new CustomersExport, 'customer.xlsx');
+        // })->name('customer.printCustomersExcel');
+
+        // Route::get('/export-employees', function () {
+        // return Excel::download(new EmployeesExport, 'employee.xlsx');
+        // })->name('employee.printEmployeesExcel');
+
+        // Route::get('/export-posBills', function () {
+        // return Excel::download(new BosBillsExport, 'posBill.xlsx');
+        // })->name('posBill.printPosBillsExcel');
+
+        // Route::get('/export-suppliers', function () {
+        // return Excel::download(new SuppliersExport, 'supplier.xlsx');
+        // })->name('supplier.printSuppliersExcel');
+    });
+
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
     Route::post('/login', [AuthController::class, 'login']);
 
     Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
     Route::post('/register', [AuthController::class, 'register']);
+
+
 
 
     // Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');

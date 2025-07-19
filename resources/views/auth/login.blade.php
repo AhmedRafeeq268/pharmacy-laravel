@@ -65,7 +65,7 @@
 
 <div class="login-card">
 
-    <!-- زر تبديل اللغة -->
+    <!--  زر تبديل اللغة -->
     <div class="language-toggle">
         <a href="{{ route('toggle.language') }}" class="btn btn-outline-primary btn-sm">
 

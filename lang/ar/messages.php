@@ -80,7 +80,9 @@ return [
         'address' => 'العنوان',
         'address_details' => 'تفاصيل العنوان',
         'edit_customer_data' => 'تعديل بيانات الزبون',
-        'search_customer' => 'ابحث باستخدام الاسم او رقم الهوية',
+        'search_customer' => 'ابحث باستخدام الاسم او رقم الهوية او رقم الهاتف',
+        'export_customers_excel' => 'طباعة بيانات الزبائن اكسل',
+
 
      ],
 
@@ -98,7 +100,8 @@ return [
         'show_employees' => 'عرض بيانات الموظفين',
         'select_wallet' => 'اختر نوع المحفظة',
         'edit_employee_data' => 'تعديل بيانات الموظف',
-        'search_employee' => 'ابحث باستخدام الاسم او رقم الهوية',
+        'search_employee' => 'ابحث باستخدام الاسم او رقم الهوية او رقم الهاتف',
+        'export_employees_excel' => 'طباعة بيانات الموظفين اكسل',
 
 
 
@@ -118,6 +121,8 @@ return [
         'select_wallet' => 'اختر نوع المحفظة',
         'edit_distributor_data' => 'تعديل بيانات الموزع',
         'search_suppliers' => 'ابحث باستخدام الاسم او رقم الهاتف',
+        'export_suppliers_excel' => 'طباعة بيانات الموردين اكسل',
+
 
     ],
 
@@ -144,9 +149,10 @@ return [
         'product_image'         => 'صورة المنتج',
         'view_products'         => 'عرض المنتجات',
         'edit_product' => 'تعديل بيانات المنتج',
-        'search_product' => 'البحث باستخدام اسم المنتج',
+        'search_product' => ' البحث باستخدام اسم المنتج او تصنيف المنتج',
         'unit_price' => 'سعر الوحدة',
         'barcode' => 'رقم المنتج',
+        'export_products_excel' => 'طباعة بيانات المنتجات اكسل',
 
 
     ],
@@ -167,6 +173,7 @@ return [
         'certified'           => 'اعتماد',
         'manufacturer' => 'الشركة المصنعة',
         'search_bill_number' =>'ابحث برقم الفاتورة',
+        'export_bills_excel' => 'طباعة بيانات الفواتير اكسل',
 
     ],
 
@@ -214,6 +221,10 @@ return [
         'search_pos'   =>   'ابحث باستخدام رقم الفاتورة أو اسم الزبون أو اسم الموظف',
         'pos_number'   =>   'رقم فاتورة البيع',
         'is_closed_with_cashbox' => 'هل تم اغلاق الصندوق',
+        'export_employees_excel' => 'طباعة بيانات الموظفين اكسل',
+        'export_posBills_excel' => 'طباعة بيانات فواتير البيع اكسل',
+
+
     ],
 
     'login'=>[

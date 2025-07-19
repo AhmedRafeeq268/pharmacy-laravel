@@ -2,21 +2,46 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\PosBillsExport;
 use App\Models\PosBill;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use App\Models\PosBillDetails;
 use App\Models\CashBoxTransaction;
 use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Facades\Excel;
 
 class PosBillController extends Controller
 {
 
     public function index(Request $request)
-{
-    $search = $request->search;
+    {
+        $search = $request->input('search');
 
-    $posBills = PosBill::with(['customer', 'employee'])->where('total_amount', '>', 0)
+        $posBills = PosBill::with(['customer', 'employee'])->where('total_amount', '>', 0)
+        ->when($search, function ($query) use ($search) {
+            $query->where('id', 'like', "%$search%")
+                ->orWhereHas('customer', fn($q) => $q->where('name', 'like', "%$search%"))
+                ->orWhereHas('employee', fn($q) => $q->where('name', 'like', "%$search%"));
+        })
+        ->orderBy('id')
+        ->paginate(8)
+        ->appends($request->all()); // حدد عدد العناصر في كل صفحة
+
+        // إذا كان الطلب AJAX نعيد جزء الـ Table فقط
+        if ($request->ajax()) {
+            return view('pos._table2', compact('posBills'))->render();
+        }
+
+        // أما إذا كان تحميل الصفحة عادي
+        return view('pos.index', compact('posBills'));
+    }
+
+    public function export(Request $request)
+    {
+        $search = $request->input('search');
+
+        $posBills = PosBill::with(['customer', 'employee'])->where('total_amount', '>', 0)
         ->when($search, function ($query) use ($search) {
             $query->where('id', 'like', "%$search%")
                 ->orWhereHas('customer', fn($q) => $q->where('name', 'like', "%$search%"))
@@ -26,13 +51,12 @@ class PosBillController extends Controller
         ->paginate(8)
         ->appends($request->all());
 
-    if ($request->ajax()) {
-        return view('pos._table2', compact('posBills'))->render();
+        if ($posBills->isEmpty()) {
+            return redirect()->back()->with('error', 'لا توجد بيانات لتصديرها.');
+        }
+
+        return Excel::download(new PosBillsExport($search), 'posBills.xlsx');
     }
-
-    return view('pos.index', compact('posBills'));
-}
-
 
 
 public function create(Request $request, $pos_bill_id = null)
