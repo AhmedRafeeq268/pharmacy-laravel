@@ -58,7 +58,11 @@ return[
         'show_codes_table' => 'Show Codes Table',
         'edit_constant' => 'Edit Constant',
         'search_desc'=> 'Search with Desc_ar Or Desc_en',
-
+        'main_cd'       => 'Main Cd',
+        'sub_cd'        => 'Sub Cd',
+        'is_active'     => 'Is Active',
+        'yes'           => 'Yes',
+        'no'            => 'No',
 
 
      ],
@@ -82,6 +86,9 @@ return[
         'edit_customer_data' => 'Edit Customer Data',
         'search_customer' => ' Search Whith Name Or Id Card Or Phone Number',
         'export_customers_excel' => 'Export Customers Data to Excel',
+        'active' => 'active',
+        'inActive' => 'InActive',
+        'select_status' => 'Select Status',
 
 
      ],
@@ -92,7 +99,7 @@ return[
         'phone_number' => 'Phone Number',
         'email' => 'Email',
         'id_card' => 'ID Card',
-        'bank_account_number' => 'Bank Account',
+        'bank_account_number' => 'Bank Account Or IPAN',
         'bank_name' => 'Bank Name',
         'select_bank' => 'Select Bank',
         'wallet_phone_number' => 'Wallet Phone Number',
@@ -270,7 +277,8 @@ return[
 
 
     'localization' => 'en',
-    'aa'=>'ahmed',
+    'active' => 'Active',
+    'inactive' => 'InActive',
     'view'=> 'View',
     'delete'=> 'Delete',
     'edit'=> 'Edit',
@@ -300,7 +308,13 @@ return[
      'password_confirmation' => 'Confirm Password',
      'update' => 'Update',
 
-
+        'codeTb_details'     => 'Code Details',
+        'customer_details'     => 'Customer Details',
+        'employee_details'     => 'Employee Details',
+        'product_details'     => 'Product Details',
+        'supplier_details'     => 'Supplier Details',
+        'back_to_list'       => 'Back to List',
+        'edit'               => 'Edit',
 
 
 

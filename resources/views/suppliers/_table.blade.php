@@ -19,13 +19,13 @@
                 <td>{{ $supplier->name }}</td>
                 <td>{{ $supplier->phone }}</td>
                 <td>{{ $supplier->email }}</td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
+                <td>{{ $supplier->bankAccount->IPAN ?? '-' }}</td>
+                <td>{{ $supplier->bankAccount->bank->desc_ar ?? '-' }}</td>
+                <td>{{ $supplier->bankAccount->wallet_phone_number ?? '-' }}</td>
+                <td>{{ $supplier->bankAccount->wallet->desc_ar ?? '-' }}</td>
                 <td>
                     <div class="d-flex justify-content-center align-items-center gap-2">
-                        <a href="#" class="btn btn-info btn-sm">@lang('messages.view')</a>
+                        <a href="{{ route('supplier.show',['supplier'=>$supplier->id]) }}" class="btn btn-info btn-sm">@lang('messages.view')</a>
                         <a href="{{ route('supplier.edit',['supplier'=>$supplier->id , 'page'=>request()->get('page')] ) }}" class="btn btn-primary btn-sm">@lang('messages.edit')</a>
                         <form action="{{ route('supplier.destroy',['supplier'=>$supplier->id , 'page'=>request()->get('page')]) }}" method="POST" onsubmit="return confirm('Are you sure?')" style="display:inline;">
                             @csrf

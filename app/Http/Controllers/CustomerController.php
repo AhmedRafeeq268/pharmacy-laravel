@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CodesTb;
 use App\Models\customer;
-use Illuminate\Http\Request;
 
+use Illuminate\Http\Request;
 use App\Exports\CustomersExport;
 use function Laravel\Prompts\select;
 use Maatwebsite\Excel\Facades\Excel;
@@ -53,12 +54,20 @@ class customerController extends Controller
         return Excel::download(new CustomersExport($search), 'customers.xlsx');
     }
 
-
-    public function create(){
-        return view('customer.create');
+    public function show($id){
+        $customer = customer::findOrFail($id);
+        return view('customer.show',compact('customer'));
     }
 
+
+    public function create(){
+        $status = CodesTb::where('main_cd',9)->where('sub_cd', '>', 0)->get();
+        return view('customer.create',compact('status'));
+    }
+
+
     public function store(){
+        // dd(request()->status);
         request()->validate([
             'name' => ['required'],
             'phone' => ['required'],
@@ -66,6 +75,7 @@ class customerController extends Controller
             'address' => ['required'],
             'id_card' => ['required'],
             'address_details' => ['required'],
+            'status_cd' => ['required'],
         ]);
 
         // $data = request()->all();
@@ -75,6 +85,7 @@ class customerController extends Controller
         $address = request()->address;
         $id_card = request()->id_card;
         $address_details = request()->address_details;
+        $status_cd = request()->status_cd;
 
 
         customer::create([
@@ -83,17 +94,20 @@ class customerController extends Controller
             'email'=>$email,
             'address'=>$address,
             'id_card'=>$id_card,
+            'status_cd'=>$status_cd,
             'address_details'=>$address_details,
         ]);
         return to_route('customer.create')->with('success', __('messages.added'));
     }
 
-    public function edit($customerId){
-        $singlecustomerFRomDB=customer::findOrFail($customerId);
-        return view('customer.edit',['customer'=>$singlecustomerFRomDB]);
+    public function edit($id){
+        $customer=customer::findOrFail($id);
+        $status = CodesTb::where('main_cd',9)->where('sub_cd', '>', 0)->get();
+
+        return view('customer.edit',compact('customer','status'));
     }
 
-    public function update($customerId){
+    public function update($id){
         request()->validate([
             'name' => ['required'],
             'phone' => ['required'],
@@ -101,6 +115,7 @@ class customerController extends Controller
             'address' => ['required'],
             'id_card' => ['required'],
             'address_details' => ['required'],
+            'status_cd' => ['required'],
         ]);
 
         $name = request()->name;
@@ -109,8 +124,8 @@ class customerController extends Controller
         $address = request()->address;
         $id_card = request()->id_card;
         $address_details = request()->address_details;
-
-        $customer = customer::findOrFail($customerId);
+        $status_cd = request()->status_cd;
+        $customer = customer::findOrFail($id);
 
 
         $customer->update([
@@ -120,14 +135,15 @@ class customerController extends Controller
             'address' => $address,
             'id_card' => $id_card,
             'address_details' => $address_details,
+            'status_cd' => $status_cd ,
         ]);
         $page = request()->get('page', 1);
         return to_route('customer.index',['page' => $page])
         ->with('success', __('messages.updated'));
     }
 
-    public function destroy($customerId){
-        $customer = customer::find($customerId);
+    public function destroy($id){
+        $customer = customer::find($id);
         if (!$customer)
         {
             return redirect()->back()->with('error', __('messages.not_found'));

@@ -59,6 +59,8 @@ Route::get('/toggle-language', function () {
     Route::put('/customer/{customer}',[customerController::class,'update'])->name('customer.update');
     Route::delete('/customer/{customer}',[customerController::class,'destroy'])->name('customer.destroy');
     Route::get('/customer/export', [CustomerController::class, 'export'])->name('customer.printCustomersExcel');
+    Route::get('customer/show{customer}',[customerController::class,'show'])->name('customer.show');
+
 
     Route::get('/employee',[EmployeeController::class,'index'])->name('employee.index');
     Route::get('/employee/create',[EmployeeController::class,'create'])->name('employee.create');
@@ -67,6 +69,9 @@ Route::get('/toggle-language', function () {
     Route::put('/employee/{employee}',[EmployeeController::class,'update'])->name('employee.update');
     Route::delete('/employee/{employee}',[EmployeeController::class,'destroy'])->name('employee.destroy');
     Route::get('/employee/export', [EmployeeController::class, 'export'])->name('employee.printEmployeesExcel');
+    Route::get('employee/{employee}', [EmployeeController::class, 'show'])->name('employee.show');
+
+
 
     Route::get('/codeTb',[CodesTbController::class,'index'])->name('codeTb.index');
     Route::get('/codeTb/create',[CodesTbController::class,'create'])->name('codeTb.create');
@@ -74,6 +79,7 @@ Route::get('/toggle-language', function () {
     Route::get('/codeTb/{codeTb}/edit',[CodesTbController::class,'edit'])->name('codeTb.edit');
     Route::put('/codeTb/{codeTb}',[CodesTbController::class,'update'])->name('codeTb.update');
     Route::delete('/codeTb/{codeTb}',[CodesTbController::class,'destroy'])->name('codeTb.destroy');
+    Route::get('codeTb/show{codeTb}',[CodesTbController::class,'show'])->name('codeTb.show');
 
 
     Route::get('/supplier',[SupplierController::class,'index'])->name('supplier.index');
@@ -83,6 +89,8 @@ Route::get('/toggle-language', function () {
     Route::put('/supplier/{supplier}',[SupplierController::class,'update'])->name('supplier.update');
     Route::delete('/supplier/{supplier}',[SupplierController::class,'destroy'])->name('supplier.destroy');
     Route::get('/supplier/export', [SupplierController::class, 'export'])->name('supplier.printSuppliersExcel');
+    Route::get('supplier/{supplier}', [SupplierController::class, 'show'])->name('supplier.show');
+
 
 
     Route::get('/product',[ProductController::class,'index'])->name('product.index');
@@ -92,6 +100,8 @@ Route::get('/toggle-language', function () {
     Route::put('/product/{product}',[ProductController::class,'update'])->name('product.update');
     Route::delete('/product/{product}',[ProductController::class,'destroy'])->name('product.destroy');
     Route::get('/product/export', [ProductController::class, 'export'])->name('product.printProductsExcel');
+    Route::get('product/{product}', [ProductController::class, 'show'])->name('product.show');
+
 
 
     Route::get('/productCategory',[ProductCategoryController::class,'index'])->name('productCategory.index');
@@ -100,6 +110,8 @@ Route::get('/toggle-language', function () {
     Route::get('/productCategory/{productCategory}/edit',[ProductCategoryController::class,'edit'])->name('productCategory.edit');
     Route::put('/productCategory/{productCategory}',[ProductCategoryController::class,'update'])->name('productCategory.update');
     Route::delete('/productCategory/{productCategory}',[ProductCategoryController::class,'destroy'])->name('productCategory.destroy');
+    Route::get('productCategory/{productCategory}', [ProductCategoryController::class, 'show'])->name('productCategory.show');
+
 
     Route::get('/bill',[PurchasesBillsController::class,'index'])->name('bill.index');
     Route::get('/bill/create',[PurchasesBillsController::class,'create'])->name('bill.create');

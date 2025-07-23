@@ -27,7 +27,7 @@
                 </td>
                 <td>
                     <div class="d-flex justify-content-center align-items-center gap-2 flex-wrap">
-                        <a href="#" class="btn btn-info btn-sm px-3 btn-sm">@lang('messages.view')</a>
+                        <a href="{{ route('product.show',$product->id) }}" class="btn btn-info btn-sm px-3 btn-sm">@lang('messages.view')</a>
 
                         <a href="{{ route('product.edit', ['product' => $product->id, 'page' => request()->get('page')]) }}"
                         class="btn btn-primary btn-sm px-3">@lang('messages.edit')</a>

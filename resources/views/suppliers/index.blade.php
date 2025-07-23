@@ -15,7 +15,7 @@
                 </ul>
             </div>
             <!--/End system bath-->
-            <div class="w-90 mt-5">
+            <div class="w-100 mt-5">
                 <div class="d-flex justify-content-center align-items-center mb-3 gap-2 flex-wrap">
                     <input type="text" id="searchInput" class="form-control w-50 mb-2"  placeholder="@lang('messages.suppliers.search_suppliers')">
 

@@ -29,7 +29,7 @@
                         <a href="{{ route('customer.create') }}" style="background-color: #d35400">
                             <h4>@lang('messages.farmacy.add_customer')</h4>
                         </a>
-                        <a href="" style="background-color: #2c3e50">
+                        <a href="{{ route('pos.create') }}" style="background-color: #2c3e50">
                             <h4>@lang('messages.farmacy.pos')</h4>
                         </a>
                     </div>

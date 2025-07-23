@@ -14,8 +14,13 @@ return new class extends Migration
         Schema::create('bank_accounts', function (Blueprint $table) {
             $table->id();
             $table->bigInteger('IPAN');
+            $table->integer('bank_cd');
+            $table->bigInteger('wallet_phone_number');
+            $table->integer('wallet_cd');
             $table->integer('currency_cd');
             $table->integer('status_cd');
+            $table->unsignedBigInteger('accountable_id');    // ID الموظف أو المورد
+            $table->integer('accountable_type_cd');
             $table->timestamps();
         });
     }

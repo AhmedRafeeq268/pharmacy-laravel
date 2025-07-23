@@ -21,13 +21,14 @@
                 <td>{{ $employee->phone }}</td>
                 <td>{{ $employee->email }}</td>
                 <td>{{ $employee->id_card }}</td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
+                <td>{{ $employee->bankAccount->IPAN ?? '-' }}</td>
+                <td>{{ $employee->bankAccount->bank->desc_ar ?? '-' }}</td>
+                <td>{{ $employee->bankAccount->wallet_phone_number ?? '-' }}</td>
+                <td>{{ $employee->bankAccount->wallet->desc_ar ?? '-' }}</td>
+
                 <td>
                     <div class="d-flex justify-content-center align-items-center gap-2">
-                        <a href="#" class="btn btn-info btn-sm">@lang('messages.view')</a>
+                        <a href="{{ route('employee.show',['employee' => $employee->id, 'page' => request()->get('page')]) }}" class="btn btn-info btn-sm">@lang('messages.view')</a>
 
                         <a href="{{ route('employee.edit', ['employee' => $employee->id, 'page' => request()->get('page')]) }}"
                         class="btn btn-primary btn-sm">@lang('messages.edit')</a>

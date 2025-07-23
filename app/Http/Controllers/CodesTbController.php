@@ -94,17 +94,19 @@ public function store(Request $request)
     /**
      * Display the specified resource.
      */
-    public function show(CodesTb $codesTb)
+    public function show($id)
     {
-        //
+        $codeTb=CodesTb::findOrFail($id);
+        return view('codesTb.show',compact('codeTb'));
+
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit($codeTbId){
-        $singleCodeFRomDB=CodesTb::findOrFail($codeTbId);
-        return view('codesTb.edit',['codeTb'=>$singleCodeFRomDB]);
+    public function edit($id){
+        $codeTb=CodesTb::findOrFail($id);
+        return view('codesTb.edit',compact('codeTb'));
     }
 
     /**

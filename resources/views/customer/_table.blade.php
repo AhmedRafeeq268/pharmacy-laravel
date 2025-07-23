@@ -19,11 +19,22 @@
                 <td>{{ $customer->phone }}</td>
                 <td>{{ $customer->email }}</td>
                 <td>{{ $customer->id_card }}</td>
-                <td>{{ $customer->status_cd }}</td>
+                <td>
+
+
+                @if ( $customer->status_cd == '0')
+                    @lang('messages.customer.active')
+                @endif
+                @if ( $customer->status_cd == '1')
+                    @lang('messages.customer.inActive')
+                @endif
+
+
+                </td>
                 <td>{{ $customer->address_details }}</td>
                 <td>
                     <div class="d-flex justify-content-center align-items-center gap-2">
-                        <a href="#" class="btn btn-info btn-sm">@lang('messages.view')</a>
+                        <a href="{{ route('customer.show',['customer' => $customer->id]) }}" class="btn btn-info btn-sm">@lang('messages.view')</a>
 
                         <a href="{{ route('customer.edit', ['customer' => $customer->id, 'page' => request()->get('page')]) }}"
                         class="btn btn-primary btn-sm">@lang('messages.edit')</a>

@@ -44,19 +44,19 @@
                     <div class="row mt-3">
                         <div class="col-md-3">
                             <label class="mb-2">@lang('messages.employee.bank_account_number')</label>
-                            <input type="number" class="form-control" name="bank_account" value="{{ old('bank_account', $employee->bank_account) }}">
+                            <input type="number" class="form-control" name="bank_account" value="{{ old('bank_account', $employee->bankAccount->IPAN ?? '') }}">
                             @error('bank_account') <small class="text-danger">{{ $message }}</small> @enderror
                         </div>
 
                         <div class="col-md-3">
                             <label class="mb-2">@lang('messages.employee.bank_name')</label>
                             <select name="bank_name" class="form-control">
-                                <option value="" disabled {{ old('bank_name', $employee->bank_name) ? '' : 'selected' }}>
+                                <option value="" disabled {{ old('bank_name', $employee->bankAccount->bank_cd ?? '') ? '' : 'selected' }}>
                                     @lang('messages.employee.select_bank')
                                 </option>
                                 @foreach ($banks as $bank)
                                     <option value="{{ $bank->sub_cd }}"
-                                        {{ old('bank_name', $employee->bank_name) == $bank->sub_cd ? 'selected' : '' }}>
+                                        {{ old('bank_name', $employee->bankAccount->bank_cd ?? '') == $bank->sub_cd ? 'selected' : '' }}>
                                         {{ $bank->desc_ar }}
                                     </option>
                                 @endforeach
@@ -66,26 +66,27 @@
 
                         <div class="col-md-3">
                             <label class="mb-2">@lang('messages.employee.wallet_phone_number')</label>
-                            <input type="number" class="form-control" name="wallet_phone" value="{{ old('wallet_phone', $employee->wallet_phone) }}">
+                            <input type="number" class="form-control" name="wallet_phone" value="{{ old('wallet_phone', $employee->bankAccount->wallet_phone_number ?? '') }}">
                             @error('wallet_phone') <small class="text-danger">{{ $message }}</small> @enderror
                         </div>
 
                         <div class="col-md-3">
                             <label class="mb-2">@lang('messages.employee.wallet_type')</label>
                             <select name="wallet_type" class="form-control">
-                                <option value="" disabled {{ old('wallet_type', $employee->wallet_type) ? '' : 'selected' }}>
+                                <option value="" disabled {{ old('wallet_type', $employee->bankAccount->wallet_cd ?? '') ? '' : 'selected' }}>
                                     @lang('messages.employee.select_wallet')
                                 </option>
                                 @foreach ($wallets as $wallet)
                                     <option value="{{ $wallet->sub_cd }}"
-                                        {{ old('wallet_type', $employee->wallet_type) == $wallet->sub_cd ? 'selected' : '' }}>
+                                        {{ old('wallet_type', $employee->bankAccount->wallet_cd ?? '') == $wallet->sub_cd ? 'selected' : '' }}>
                                         {{ $wallet->desc_ar }}
                                     </option>
                                 @endforeach
                             </select>
-                            @error('wallet_type') <small class="text-danger">{{ $message }}</small> @enderror
+                            @error('wallet_cd') <small class="text-danger">{{ $message }}</small> @enderror
                         </div>
                     </div>
+
 
                     {{-- الأزرار --}}
                     <div class="row mt-4">

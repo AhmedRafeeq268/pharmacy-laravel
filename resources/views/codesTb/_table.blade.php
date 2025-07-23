@@ -28,7 +28,7 @@
                         <div class="d-flex justify-content-center align-items-center gap-2 flex-wrap">
 
 
-                            <a href="#" class="btn btn-info btn-sm px-3"> @lang('messages.view')</a>
+                            <a href="{{ route('codeTb.show',['codeTb' => $codeTb->id]) }}" class="btn btn-info btn-sm px-3"> @lang('messages.view')</a>
 
                             <a href="{{ route('codeTb.edit', ['codeTb' => $codeTb->id, 'page' => request()->get('page')]) }}"class="btn btn-primary btn-sm px-3">@lang('messages.edit')</a>
 

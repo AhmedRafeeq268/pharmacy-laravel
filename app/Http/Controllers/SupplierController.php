@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\CodesTb;
 use App\Models\Supplier;
+use App\Models\BankAccount;
 use Illuminate\Http\Request;
 use App\Exports\SuppliersExport;
 use Maatwebsite\Excel\Facades\Excel;
@@ -64,23 +65,35 @@ class SupplierController extends Controller
             'name' => ['required'],
             'phone' => ['required'],
             'email' => ['required'],
-            // 'bank_account' => ['required'],
-            // 'bank_name' => ['required'],
-            // 'wallet_phone' => ['required'],
-            // 'wallet_type' => ['required'],
+            'bank_account' => ['nullable', 'numeric'],
+            'bank_name' => ['nullable', 'integer'],
+            'wallet_phone' => ['nullable', 'numeric'],
+            'wallet_type' => ['nullable', 'integer'],
         ]);
 
         // $data = request()->all();
         $name = request()->name;
         $phone = request()->phone;
         $email = request()->email;
+        $bank_account = request()->bank_account;
+        $bank_name = request()->bank_name;
+        $wallet_phone = request()->wallet_phone;
+        $wallet_type = request()->wallet_type;
 
-
-        Supplier::create([
+        $supplier = Supplier::create([
             'name'=>$name,
             'phone'=>$phone,
             'email'=>$email,
 
+        ]);
+
+        BankAccount::create([
+            'IPAN'=>$bank_account,
+            'bank_cd'=>$bank_name,
+            'wallet_phone_number'=>$wallet_phone,
+            'wallet_cd'=>$wallet_type,
+            'accountable_type_cd'=>2,
+            'accountable_id'=>$supplier->id,
         ]);
         return to_route('supplier.create')->with('success', __('messages.added'));
     }
@@ -88,9 +101,9 @@ class SupplierController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Supplier $supplier)
-    {
-        //
+    public function show($id){
+        $supplier = Supplier::findOrFail($id);
+        return view('suppliers.show',compact('supplier'));
     }
 
     /**
@@ -114,10 +127,10 @@ class SupplierController extends Controller
                 'name' => ['required'],
                 'phone' => ['required'],
                 'email' => ['required'],
-                // 'bank_account' => ['required'],
-                // 'bank_name' => ['required'],
-                // 'wallet_phone' => ['required'],
-                // 'wallet_type' => ['required'],
+                'bank_account' => ['nullable', 'numeric'],
+                'bank_name' => ['nullable', 'integer'],
+                'wallet_phone' => ['nullable', 'numeric'],
+                'wallet_type' => ['nullable', 'integer'],
             ]);
 
             // $data = request()->all();
@@ -131,6 +144,23 @@ class SupplierController extends Controller
                 'phone'=>$phone,
                 'email'=>$email,
             ]);
+            // تحديث أو إنشاء بيانات الحساب البنكي
+            $bankAccount = $supplier->bankAccount()->first();
+
+            if (!$bankAccount) {
+                $bankAccount = new BankAccount();
+                $bankAccount->accountable_id = $supplier->id;
+                $bankAccount->accountable_type_cd = 2; // 2 معناها موزع
+            }
+
+            $bankAccount->IPAN = request()->bank_account;
+            $bankAccount->bank_cd = request()->bank_name;
+            $bankAccount->wallet_phone_number = request()->wallet_phone;
+            $bankAccount->wallet_cd = request()->wallet_type;
+
+            $bankAccount->save();
+
+
             $page = request()->get('page', 1);
             return to_route('supplier.index',['page' => $page])
             ->with('success', __('messages.updated'));

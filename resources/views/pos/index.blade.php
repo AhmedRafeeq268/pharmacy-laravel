@@ -32,7 +32,7 @@
 
             <div class="quick_links text-center">
                 <a href="{{ route('pos.create') }}" class="btn text-white py-3" style="background-color: #d35400">
-                    <h6 class="mb-0 text-white">@lang('messages.product.add_new_product')</h6>
+                    <h6 class="mb-0 text-white">@lang('messages.pos.create_pos')</h6>
                 </a>
             </div>
         </div>

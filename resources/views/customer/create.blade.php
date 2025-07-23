@@ -53,7 +53,30 @@
                             @error('address_details') <small class="text-danger">{{ $message }}</small> @enderror
                         </div>
 
-                        <div class="col-md-3"></div>
+                            {{-- @php
+                                $descField = app()->getLocale() === 'ar' ? 'desc_ar' : 'desc_en';
+                            @endphp --}}
+                        {{-- <div class="col-md-3">
+                            <label class="mb-2">@lang('messages.customer.status')</label>
+                            <select name="status_cd" class="form-control">
+                                <option value="" disabled {{ old('status_cd') ? '' : 'selected' }}>@lang('messages.customer.status')</option>
+                                @foreach ($status as $item)
+                                    <option value="{{ $item->sub_cd }}" {{ old('status_cd') == $item->sub_cd ? 'selected' : '' }}>
+                                        {{ $item->$descField }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('status_cd') <small class="text-danger">{{ $message }}</small> @enderror
+                        </div> --}}
+                        <div class="col-md-2">
+                            <label class="mb-2 d-block">@lang('messages.customer.status')</label>
+                            <button type="button" id="toggleActiveBtn" class="btn {{ old('status_cd', 0) ? 'btn-success' : 'btn-secondary' }}">
+                                {{ old('status_cd', 0) ? __('messages.codesTb.active') : __('messages.codesTb.inactive') }}
+                            </button>
+                            <input type="hidden" name="status_cd" id="is_active_input" value="{{ old('is_active', 0) }}">
+                            @error('status_cd') <small class="text-danger d-block">{{ $message }}</small> @enderror
+                        </div>
+
                         <div class="col-md-3"></div>
                     </div>
 
@@ -72,3 +95,23 @@
 </div>
 <!--/End Main content container-->
 @endsection
+
+@push('scripts')
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+               // تفعيل/تعطيل حالة "مفعل"
+        const btnActive = document.getElementById('toggleActiveBtn');
+        const inputActive = document.getElementById('is_active_input');
+
+        btnActive.addEventListener('click', function () {
+            const isActive = inputActive.value === '1';
+            inputActive.value = isActive ? '0' : '1';
+            btnActive.classList.toggle('btn-secondary', !isActive);
+            btnActive.classList.toggle('btn-success', isActive);
+            btnActive.textContent = isActive ? '{{ __('messages.codesTb.active') }}' : '{{ __('messages.codesTb.inactive') }}';
+        });
+    });
+
+</script>
+
+@endpush

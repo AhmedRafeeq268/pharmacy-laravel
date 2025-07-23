@@ -66,9 +66,9 @@ class ProductCategoryController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show()
-    {
-        //
+    public function show($id){
+        $productCategory = ProductCategory::findOrFail($id);
+        return view('productCategory.show',compact('productCategory'));
     }
 
     /**

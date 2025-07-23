@@ -60,7 +60,11 @@ return [
         'show_codes_table' => 'عرض جدول الأكواد',
         'edit_constant' => 'تعديل ثابت',
         'search_desc'=> 'البحث ب الوصف عربي او انجليزي',
-
+        'main_cd'       => 'الكود الرئيسي',
+        'sub_cd'        => 'الكود الفرعي',
+        'is_active'     => 'نشط',
+        'yes'           => 'نعم',
+        'no'            => 'لا',
      ],
 
      'customer'=>[
@@ -82,7 +86,9 @@ return [
         'edit_customer_data' => 'تعديل بيانات الزبون',
         'search_customer' => 'ابحث باستخدام الاسم او رقم الهوية او رقم الهاتف',
         'export_customers_excel' => 'طباعة بيانات الزبائن اكسل',
-
+        'active' => 'فعال',
+        'inActive' => 'غير فعال',
+        'select_status' => 'اختر الحالة',
 
      ],
 
@@ -92,7 +98,7 @@ return [
         'phone_number' => 'رقم الهاتف',
         'email' => 'البريد الإلكتروني',
         'id_card' => 'رقم الهوية',
-        'bank_account_number' => 'رقم الحساب البنكي',
+        'bank_account_number' => ' رقم الحساب البنكي او الايبان',
         'bank_name' => 'اسم البنك',
         'select_bank' => 'اختر البنك',
         'wallet_phone_number' => 'رقم هاتف المحفظة',
@@ -270,7 +276,8 @@ return [
 
 
     'localization' => 'ar',
-    'aa' =>'احمد',
+    'active' => 'مفعل',
+    'inactive' => 'غير مفعل',
     'view'=> 'عرض',
     'delete'=> 'حذف',
     'edit'=> 'تعديل',
@@ -300,6 +307,14 @@ return [
      'password_confirmation' => 'تأكيد كلمة المرور',
      'update' => 'تحديث',
 
+     'codeTb_details'     => 'تفاصيل الكود',
+     'customer_details'     => 'بيانات الزبون',
+     'employee_details'     => 'بيانات الموظف',
+     'product_details'     => 'بيانات المنتج',
+     'supplier_details'     => 'بيانات المورد',
+
+    'back_to_list'       => 'العودة إلى القائمة',
+    'edit'               => 'تعديل',
 
 
 ];

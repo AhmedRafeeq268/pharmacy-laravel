@@ -22,6 +22,7 @@
         <link href="{{ asset('css/en.css') }}" rel="stylesheet" />
     @endif
 </head>
+
 <body>
 <div class="container-fluid">
 
@@ -214,7 +215,16 @@
                             <li><a href="#"><i class="bi bi-cart-plus me-1"></i> @lang('messages.master.purchasing')</a></li>
                             <li><a href="#"><i class="bi bi-receipt me-1"></i>@lang('messages.master.sales_operations')</a></li>
                             <li><a href="#"><i class="bi bi-boxes me-1"></i>@lang('messages.master.stors_balance')</a></li>
-                            <li><a href="#"><i class="bi bi-credit-card-2-front me-1"></i>@lang('messages.master.pos')</a></li>
+                            {{-- <li><a href="#"><i class="bi bi-credit-card-2-front me-1"></i>@lang('messages.master.pos')</a></li> --}}
+                            <li>
+                                <a href="#">
+                                    <i class="bi bi-credit-card-2-front me-1"></i>@lang('messages.master.pos')
+                                </a>
+                                <ul class="drop_main_menu">
+                                    <li><a href="{{ route('pos.create') }}">@lang('messages.master.add_new ')</a></li>
+                                    <li><a href="{{ route('pos.index') }}">@lang('messages.master.view_all ')</a></li>
+                                </ul>
+                            </li>
                         </ul>
                     </li>
 
