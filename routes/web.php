@@ -11,11 +11,13 @@ use App\Exports\EmployeesExport;
 use App\Exports\SuppliersExport;
 use Illuminate\Support\Facades\App;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Models\PurchasesBillsDetails;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Session;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\CodesTbController;
+use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\FarmacyController;
 use App\Http\Controllers\PosBillController;
 use App\Http\Controllers\ProductController;
@@ -25,6 +27,8 @@ use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\BillCertifiedController;
+use App\Http\Controllers\PurchasesBillController;
+use App\Http\Controllers\PurchaseReturnController;
 use App\Http\Controllers\PurchasesBillsController;
 use App\Http\Controllers\ProductCategoryController;
 use App\Http\Controllers\PurchasesBillsDetailsController;
@@ -113,12 +117,16 @@ Route::get('/toggle-language', function () {
     Route::get('productCategory/{productCategory}', [ProductCategoryController::class, 'show'])->name('productCategory.show');
 
 
-    Route::get('/bill',[PurchasesBillsController::class,'index'])->name('bill.index');
-    Route::get('/bill/create',[PurchasesBillsController::class,'create'])->name('bill.create');
-    Route::post('/bill',[PurchasesBillsController::class,'store'])->name('bill.store');
-    Route::get('/bill/{bill}/edit',[PurchasesBillsController::class,'edit'])->name('bill.edit');
-    Route::put('/bill/{bill}',[PurchasesBillsController::class,'update'])->name('bill.update');
-    Route::delete('/bill/{bill}',[PurchasesBillsController::class,'destroy'])->name('bill.destroy');
+    Route::get('/bill',[PurchasesBillController::class,'index'])->name('bill.index');
+    Route::get('/bill/create',[PurchasesBillController::class,'create'])->name('bill.create');
+    Route::post('/bill',[PurchasesBillController::class,'store'])->name('bill.store');
+    Route::get('/bill/{bill}/edit',[PurchasesBillController::class,'edit'])->name('bill.edit');
+    Route::put('/bill/{bill}',[PurchasesBillController::class,'update'])->name('bill.update');
+    Route::delete('/bill/{bill}',[PurchasesBillController::class,'destroy'])->name('bill.destroy');
+    Route::get('bill/{billId}', [PurchasesBillController::class, 'print'])->name('bill.print');
+    Route::get('bill/{bill}', [PurchasesBillController::class, 'show'])->name('bill.show');
+
+
 
     Route::get('/billDetails',[PurchasesBillsDetailsController::class,'index'])->name('billDetails.index');
     Route::get('/billDetails/{billId}/create',[PurchasesBillsDetailsController::class,'create'])->name('billDetails.create');
@@ -126,6 +134,9 @@ Route::get('/toggle-language', function () {
     Route::get('/billDetails/{billDetailsId}/edit',[PurchasesBillsDetailsController::class,'edit'])->name('billDetails.edit');
     Route::put('/billDetails/{billDetailsId}',[PurchasesBillsDetailsController::class,'update'])->name('billDetails.update');
     Route::delete('/billDetails/{billDetailsId}',[PurchasesBillsDetailsController::class,'destroy'])->name('billDetails.destroy');
+    // Route::get('/billDetails/{billId}/print', [PurchasesBillsDetailsController::class, 'print'])->name('billDetails.print');
+    Route::get('/billDetails/{billId}/close', [PurchasesBillsDetailsController::class, 'closeBill'])->name('billDetails.close');
+
 
     Route::get('/billCertified/{billId}',[BillCertifiedController::class,'index'])->name('billCertified.index');
     Route::post('/billCertified/{billId}',[BillCertifiedController::class,'store'])->name('billCertified.store');
@@ -154,33 +165,15 @@ Route::get('/toggle-language', function () {
 
 
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
-        // Route::get('/admin/users/create', [UserController::class, 'create'])->name('admin.users.create');
-        // Route::post('/admin/users', [UserController::class, 'store'])->name('admin.users.store');
-        // Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
-        // Route::get('/export-users', function () {
-        // return Excel::download(new UsersExport, 'users.xlsx');
-        // })->name('user.printUsersExcel');
+    Route::get('purchaseReturns/create', [PurchaseReturnController::class, 'create'])->name('purchaseReturns.create');
+    Route::post('purchaseReturns', [PurchaseReturnController::class, 'store'])->name('purchaseReturns.store');
 
-        // Route::get('/export-products', function () {
-        // return Excel::download(new ProductsExport, 'product.xlsx');
-        // })->name('product.printProductsExcel');
+    Route::get('/expenses/create', [ExpenseController::class, 'create'])->name('expenses.create');
+    Route::post('/expenses/store', [ExpenseController::class, 'store'])->name('expenses.store');
+    Route::get('/expenses/report', [ExpenseController::class, 'report'])->name('expenses.report');
 
-        // Route::get('/export-customers', function () {
-        // return Excel::download(new CustomersExport, 'customer.xlsx');
-        // })->name('customer.printCustomersExcel');
 
-        // Route::get('/export-employees', function () {
-        // return Excel::download(new EmployeesExport, 'employee.xlsx');
-        // })->name('employee.printEmployeesExcel');
-
-        // Route::get('/export-posBills', function () {
-        // return Excel::download(new BosBillsExport, 'posBill.xlsx');
-        // })->name('posBill.printPosBillsExcel');
-
-        // Route::get('/export-suppliers', function () {
-        // return Excel::download(new SuppliersExport, 'supplier.xlsx');
-        // })->name('supplier.printSuppliersExcel');
     });
 
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');

@@ -66,6 +66,7 @@ class ProductController extends Controller
             'barcode' => ['required'],
             'manufacture_company' => ['required'],
             'unit_price' => ['required'],
+            'price_sell' => ['required'],
             'category_id' => ['required'],
 
         ]);
@@ -77,6 +78,7 @@ class ProductController extends Controller
         $barcode = $request->barcode;
         $manufacture_company = $request->manufacture_company;
         $unit_price = $request->unit_price;
+        $price_sell = $request->price_sell;
         $category_id = $request->category_id;
 
         Product::create([
@@ -84,6 +86,7 @@ class ProductController extends Controller
             'barcode'=>$barcode,
             'manufacture_company'=>$manufacture_company,
             'unit_price'=>$unit_price,
+            'price_sell'=>$price_sell,
             'category_id'=>$category_id,
 
         ]);
@@ -117,6 +120,7 @@ class ProductController extends Controller
             'barcode' => ['required'],
             'manufacture_company' => ['required'],
             'unit_price' => ['required'],
+            'price_sell' => ['required'],
             'category_id' => ['required'],
 
         ]);
@@ -126,6 +130,7 @@ class ProductController extends Controller
         $barcode = $request->barcode;
         $manufacture_company = $request->manufacture_company;
         $unit_price = $request->unit_price;
+        $price_sell = $request->price_sell;
         $category_id = $request->category_id;
 
         $product = Product::findOrFail($productId);
@@ -134,6 +139,7 @@ class ProductController extends Controller
             'barcode' => $barcode,
             'manufacture_company' => $manufacture_company,
             'unit_price' => $unit_price,
+            'price_sell' => $price_sell,
             'category_id' => $category_id,
         ]);
         $page = $request->get('page', 1);

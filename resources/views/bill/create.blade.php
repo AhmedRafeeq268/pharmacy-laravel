@@ -61,7 +61,7 @@
                         <div class="col-md-3">
                             <label class="mb-2">@lang('messages.bill.manufacturer')</label>
                             <select name="manufacturer" class="form-control">
-                                <option value="">@lang('messages.bill.manufacturer')</option>
+                                <option value="" >@lang('messages.bill.manufacturer')</option>
                                 @foreach ($manufacturers as $manufacturer)
                                     <option value="{{ $manufacturer->desc_en }}" {{ old('manufacturer') == $manufacturer->desc_en ? 'selected' : '' }}>
                                         {{ $manufacturer->desc_en }} - {{ $manufacturer->desc_ar }}
@@ -70,8 +70,38 @@
                             </select>
 
                         </div>
-                        <div class="col-md-3"></div>
-                        <div class="col-md-3"></div>
+
+                        <div class="col-md-3">
+                            <label class="mb-2">@lang('messages.suppliers.name')</label>
+                            <select name="supplier_id" class="form-control">
+                                <option value="">@lang('messages.suppliers.name')</option>
+                                @foreach ($suppliers as $supplier)
+                                    <option value="{{ $supplier->id }}" {{ old('supplier_id') == $supplier->name ? 'selected' : '' }}>
+                                        {{ $supplier->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+
+                        </div>
+
+                        {{-- المدفوع --}}
+                        <div class="form-group mt-2 col-md-3">
+                            <label for="paid">@lang('messages.bill.paid')</label>
+                            <input type="number" name="paid" class="form-control" placeholder="@lang('messages.bill.paid')">
+                        </div>
+
+                         {{-- الحالة --}}
+                        <div class="form-group mt-3 col-md-3">
+                            <label for="status">@lang('messages.bill.status')</label>
+                            <select name="status" class="form-control">
+                                {{-- <option value="">@lang('messages.bill.status')</option> --}}
+                                <option value="paid">@lang('messages.bill.status_paid')</option>
+                                <option value="partial">@lang('messages.bill.status_partial')</option>
+                                <option value="unpaid" selected>@lang('messages.bill.status_unpaid')</option>
+                            </select>
+                        </div>
+
+
                     </div>
 
                     {{-- الأزرار --}}

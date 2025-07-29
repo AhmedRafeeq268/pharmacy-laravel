@@ -2,13 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use App\Exports\PosBillsExport;
 use App\Models\PosBill;
 use App\Models\Product;
+use App\Models\PosSession;
 use Illuminate\Http\Request;
 use App\Models\PosBillDetails;
+use App\Exports\PosBillsExport;
 use App\Models\CashBoxTransaction;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;
 
 class PosBillController extends Controller
@@ -85,6 +87,14 @@ public function store(Request $request, $pos_bill_id = null)
     $quantity  = $request->quantity;
     $discount  = $request->discount ?? 0;
 
+     $user_id = Auth::id() ?? 1;
+
+        // الجلسة المفتوحة الحالية للصندوق
+    $currentSessionId = PosSession::where('user_id', $user_id)
+                                    ->where('status', 'open')
+                                    ->latest()
+                                    ->value('id');
+
     // جلب المنتج
     $product = Product::where('barcode', $barcode)->first();
     if (!$product) {
@@ -98,6 +108,7 @@ public function store(Request $request, $pos_bill_id = null)
             'discount'     => 0,
             'net_amount'   => 0,
             'employee_id'  => 0,
+            'session_id'   => $currentSessionId ,
         ]);
         $pos_bill_id = $posBill->id;
     }
@@ -124,6 +135,7 @@ public function store(Request $request, $pos_bill_id = null)
         'total_amount' => $total_amount,
         'discount'     => $discount,
         'net_amount'   => $net_amount,
+        'session_id'   => $currentSessionId ,
     ]);
 
     return redirect()->route('pos.create', ['pos_bill_id' => $pos_bill_id])

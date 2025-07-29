@@ -159,7 +159,8 @@ return[
         'edit_product'          => 'Edit Product',
         'search_product' => 'Search Product by Name Or ProductCategory',
         'unit_price' => 'Unit Price',
-        'barcode' => 'Product Number',
+        'price_sell'=>'Price Sell',
+        'barcode' => 'Barcode',
         'export_products_excel' => 'Export Products Date To Excel',
 
 
@@ -182,6 +183,14 @@ return[
         'manufacturer'        => 'Manufacturer',
         'search_bill_number' =>'Search The Bill Number',
         'export_bills_excel' => 'Export Bills Data To Excel',
+        'currency'=>' Currency Type ',
+        'paid' => 'Paid amount',
+        'status' => 'Status',
+        'status_paid' => 'Paid',
+        'status_partial' => 'Partially Paid',
+        'status_unpaid' => 'Unpaid',
+        'remaining' => 'Remaining Amount',
+
 
 
     ],
@@ -275,6 +284,40 @@ return[
     ],
 
 
+    'purchaseRetern' => [
+        'return_products_to_supplier' => 'Return Products to Supplier',
+        'select_purchase_bill' => 'Select Purchase Bill:',
+        'select_bill_option' => 'Bill => #:id - Supplier => :name',
+        'product' => 'Product',
+        'original_quantity' => 'Original Quantity',
+        'returned_quantity' => 'Returned Quantity',
+        'returned_amount' => 'Returned Amount',
+        'reason' => 'Reason for Return',
+        'cash_refund' => 'Cash Refund?',
+        'save_returns' => 'Save Returns',
+        'return_products_to_supplier' => 'Return Products to Supplier',
+
+
+    ],
+
+    'expenses' => [
+        'add_expense' => 'Add Expense',
+        'expense_type' => 'Expense Type',
+        'salaries' => 'Salaries',
+        'rent' => 'Rent',
+        'bills' => 'Bills',
+        'other' => 'Other',
+        'description' => 'Description',
+        'amount' => 'Amount',
+        'expense_date' => 'Expense Date',
+        'expenses_report' => 'Expenses Report',
+        'from_date' => 'From Date',
+        'to_date' => 'To Date',
+        'show' => 'Show',
+        'date' => 'Date',
+        'type' => 'Type',
+        'total' => 'Total',
+    ],
 
     'localization' => 'en',
     'active' => 'Active',
@@ -313,8 +356,13 @@ return[
         'employee_details'     => 'Employee Details',
         'product_details'     => 'Product Details',
         'supplier_details'     => 'Supplier Details',
+        'bill_details'     => 'Bill Details',
+
+
         'back_to_list'       => 'Back to List',
         'edit'               => 'Edit',
+        'yes'               => 'Yes',
+        'no'                =>'No',
 
 
 

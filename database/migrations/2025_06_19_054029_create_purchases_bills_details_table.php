@@ -1,5 +1,4 @@
 <?php
-
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -13,20 +12,26 @@ return new class extends Migration
     {
         Schema::create('purchases_bills_details', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('bill_id');
-            $table->string('product_name');
-            $table->unsignedBigInteger('product_id');
-            $table->string('product_category');
-            $table->string('product_data');
+
+            $table->foreignId('bill_id')->constrained('purchase_invoices')->onDelete('cascade');
+            $table->foreignId('product_id')->constrained()->onDelete('cascade');
+            $table->foreignId('employee_id')->constrained('employees')->onDelete('cascade');
+
             $table->integer('quantity');
-            $table->integer('cost');
-            $table->integer('total');
-            $table->integer('discount');
-            $table->unsignedBigInteger('employee_id');
+            $table->decimal('unit_price', 10, 2);
+            $table->decimal('total', 10, 2); // unit_price * quantity
+            $table->decimal('cost', 10, 2)->nullable(); // إن كانت تكلفة الشراء تختلف عن سعر البيع
+
+            // أرشفة بعض البيانات من المنتج لحظة الفاتورة
+            $table->string('product_name')->nullable();
+            $table->string('product_category')->nullable();
+            $table->string('product_data')->nullable();
+
+            $table->decimal('discount', 10, 2)->default(0);
+
             $table->timestamps();
         });
     }
-
 
     /**
      * Reverse the migrations.

@@ -2,8 +2,10 @@
 
 namespace App\Providers;
 
+use Illuminate\Auth\Events\Login;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\ServiceProvider;
+use App\Listeners\OpenPosSessionAfterLogin;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -12,8 +14,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+
     }
+
 
     /**
      * Bootstrap any application services.

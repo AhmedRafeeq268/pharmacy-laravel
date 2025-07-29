@@ -61,6 +61,12 @@
                         </div>
 
                         <div class="col-md-3">
+                            <label class="mb-2">@lang('messages.product.price_sell')</label>
+                            <input type="number" class="form-control" name="price_sell" placeholder="{{ __('messages.product.price_sell') }}" >
+                            @error('price_sell') <small class="text-danger">{{ $message }}</small> @enderror
+                        </div>
+
+                        <div class="col-md-3">
                             <label class="mb-2">@lang('messages.product.product_image')</label>
                             <input type="file" class="form-control" name="image_path" >
                             @error('image_path') <small class="text-danger">{{ $message }}</small> @enderror

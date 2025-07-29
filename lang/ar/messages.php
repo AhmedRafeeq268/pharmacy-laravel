@@ -157,6 +157,7 @@ return [
         'edit_product' => 'تعديل بيانات المنتج',
         'search_product' => ' البحث باستخدام اسم المنتج او تصنيف المنتج',
         'unit_price' => 'سعر الوحدة',
+        'price_sell'=>'سعر البيع',
         'barcode' => 'رقم المنتج',
         'export_products_excel' => 'طباعة بيانات المنتجات اكسل',
 
@@ -180,6 +181,14 @@ return [
         'manufacturer' => 'الشركة المصنعة',
         'search_bill_number' =>'ابحث برقم الفاتورة',
         'export_bills_excel' => 'طباعة بيانات الفواتير اكسل',
+        'currency'=>'نوع العملة',
+        'paid' => 'المبلغ المدفوع',
+        'status' => 'الحالة',
+        'status_paid' => 'مدفوعة',
+        'status_partial' => 'مدفوعة جزئياً',
+        'status_unpaid' => 'غير مدفوعة',
+        'remaining' => 'المبلغ المتبقي',
+
 
     ],
 
@@ -273,6 +282,41 @@ return [
         'change_language' => 'English',
     ],
 
+    'purchaseRetern' => [
+        'return_products_to_supplier' => 'إرجاع منتجات إلى المورد',
+        'select_purchase_bill' => 'اختر فاتورة شراء:',
+        'select_bill_option' => 'فاتورة رقم => #:id - المورد => :name',
+        'product' => 'المنتج',
+        'original_quantity' => 'الكمية الأصلية',
+        'returned_quantity' => 'الكمية المرجعة',
+        'returned_amount' => 'المبلغ المرجع',
+        'reason' => 'سبب الإرجاع',
+        'cash_refund' => 'نقداً؟',
+        'save_returns' => 'حفظ المرتجعات',
+        'return_products_to_supplier' => 'إرجاع منتجات للمورد',
+
+
+    ],
+
+    'expenses' => [
+        'add_expense' => 'إضافة مصروف',
+        'expense_type' => 'نوع المصروف',
+        'salaries' => 'رواتب',
+        'rent' => 'إيجار',
+        'bills' => 'فواتير',
+        'other' => 'أخرى',
+        'description' => 'الوصف',
+        'amount' => 'المبلغ',
+        'expense_date' => 'تاريخ المصروف',
+        'expenses_report' => 'تقرير المصروفات',
+        'from_date' => 'من تاريخ',
+        'to_date' => 'إلى تاريخ',
+        'show' => 'عرض',
+        'date' => 'التاريخ',
+        'type' => 'النوع',
+        'total' => 'المجموع',
+    ],
+
 
 
     'localization' => 'ar',
@@ -312,9 +356,13 @@ return [
      'employee_details'     => 'بيانات الموظف',
      'product_details'     => 'بيانات المنتج',
      'supplier_details'     => 'بيانات المورد',
+     'bill_details'     => 'بيانات الفاتورة',
 
     'back_to_list'       => 'العودة إلى القائمة',
     'edit'               => 'تعديل',
+
+    'yes'      =>'نعم',
+    'no'       =>'لا',
 
 
 ];

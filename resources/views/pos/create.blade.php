@@ -194,37 +194,37 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     window.submitFinishForm = function () {
-    const discountValue = document.getElementById('discount').value || 0;
-    const url = document.getElementById('finishForm').action;
+        const discountValue = document.getElementById('discount').value || 0;
+        const url = document.getElementById('finishForm').action;
 
-    fetch(url, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-        },
-        body: JSON.stringify({ discount: discountValue })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (!data.success) {
-            alert(data.message || 'حدث خطأ أثناء حفظ الفاتورة.');
-            return;
-        }
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: JSON.stringify({ discount: discountValue })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (!data.success) {
+                alert(data.message || 'حدث خطأ أثناء حفظ الفاتورة.');
+                return;
+            }
 
-        // عرض رسالة الطباعة
-        if (confirm('هل تريد طباعة الفاتورة؟')) {
-            window.open(`/pos/print/${data.bill_id}`, '_blank');
-        }
+            // عرض رسالة الطباعة
+            if (confirm('هل تريد طباعة الفاتورة؟')) {
+                window.open(`/pos/print/${data.bill_id}`, '_blank');
+            }
 
-        // إعادة تحميل الصفحة بعد الحفظ
-        window.location.href = "{{ route('pos.create') }}";
-    })
-    .catch(error => {
-        console.error('خطأ في الحفظ:', error);
-        alert('حدث خطأ في الحفظ، الرجاء المحاولة لاحقاً.');
-    });
-};
+            // إعادة تحميل الصفحة بعد الحفظ
+            window.location.href = "{{ route('pos.create') }}";
+        })
+        .catch(error => {
+            console.error('خطأ في الحفظ:', error);
+            alert('حدث خطأ في الحفظ، الرجاء المحاولة لاحقاً.');
+        });
+    };
 
 });
 </script>

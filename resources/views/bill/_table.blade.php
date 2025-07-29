@@ -6,6 +6,8 @@
             <th>@lang('messages.bill.currency_type')</th>
             <th>@lang('messages.bill.bill_number')</th>
             <th>@lang('messages.bill.bill_date')</th>
+            <th>@lang('messages.bill.status')</th>
+            <th>@lang('messages.bill.paid')</th>
             <th>@lang('messages.bill.receiving_employee')</th>
             <th>@lang('messages.bill.adopt_bill')</th>
             <th>@lang('messages.bill.authorized_employee')</th>
@@ -21,6 +23,8 @@
                 <td>{{ $bill->currancy_type }}</td>
                 <td>{{ $bill->bill_number }}</td>
                 <td>{{ date('d-m-Y', strtotime($bill->bill_date)) }}</td>
+                <td>{{ $bill->status }}</td>
+                <td>{{ $bill->paid }}</td>
                 <td>{{ $bill->employee_receipt }}</td>
                 <td>{{ $bill->adopt_bill }}</td>
                 <td>{{ $bill->authorized_employee }}</td>
@@ -29,7 +33,7 @@
                     <div class="d-flex justify-content-center align-items-center flex-wrap gap-1">
 
                         {{-- زر العرض --}}
-                        <a href="#" class="btn btn-info btn-sm">@lang('messages.view')</a>
+                        <a href="{{ route('bill.show',['bill'=>$bill->id]) }}" class="btn btn-info btn-sm">@lang('messages.view')</a>
 
                         {{-- زر التعديل --}}
                         <a href="{{ route('bill.edit', ['bill' => $bill->id, 'page' => request()->get('page')]) }}"

@@ -87,25 +87,25 @@
                 <div class="row">
                     <div class="col-md-3 mb-3">
                         <label class="mb-2">@lang('messages.billDetails.quantity')</label>
-                        <input type="number" class="form-control" name="quantity" value="{{ old('quantity') }}" placeholder="@lang('messages.billDetails.quantity')">
+                        <input type="number" class="form-control" name="quantity" id="quantity" value="{{ old('quantity') }}" placeholder="@lang('messages.billDetails.quantity')">
                         @error('quantity') <small class="text-danger">{{ $message }}</small> @enderror
                     </div>
 
                     <div class="col-md-3 mb-3">
                         <label class="mb-2">@lang('messages.billDetails.cost')</label>
-                        <input type="number" class="form-control" name="cost" value="{{ old('cost') }}" placeholder="@lang('messages.billDetails.cost')">
+                        <input type="number" class="form-control" name="cost" id="cost" value="{{ old('cost') }}" placeholder="@lang('messages.billDetails.cost')">
                         @error('cost') <small class="text-danger">{{ $message }}</small> @enderror
                     </div>
 
                     <div class="col-md-3 mb-3">
                         <label class="mb-2">@lang('messages.billDetails.discount')</label>
-                        <input type="number" class="form-control" name="discount" value="{{ old('discount') }}" placeholder="@lang('messages.billDetails.discount')">
+                        <input type="number" class="form-control" name="discount" id="discount" value="{{ old('discount') }}" placeholder="@lang('messages.billDetails.discount')">
                         @error('discount') <small class="text-danger">{{ $message }}</small> @enderror
                     </div>
 
                     <div class="col-md-3 mb-3">
                         <label class="mb-2">@lang('messages.billDetails.total')</label>
-                        <input type="number" class="form-control" name="total" value="{{ old('total') }}" placeholder="@lang('messages.billDetails.total')">
+                        <input type="number" class="form-control" name="total" id="total" value="{{ old('total') }}" placeholder="@lang('messages.billDetails.total')" readonly>
                         @error('total') <small class="text-danger">{{ $message }}</small> @enderror
                     </div>
 
@@ -117,7 +117,18 @@
 
                 <div class=" mt-3">
                     <button type="submit" class="btn btn-success me-2">@lang('messages.save')</button>
-                    <a href="{{ route('bill.create') }}" class="btn btn-info">@lang('messages.billDetails.finished_entry')</a>
+                    {{-- <a href="{{ route('bill.create') }}" class="btn btn-info">@lang('messages.billDetails.finished_entry')</a> --}}
+                    {{-- <a href="{{ route('billDetails.print', ['billId' => $bill_id]) }}" class="btn btn-info" target="_blank">
+                        @lang('messages.billDetails.finished_entry')
+                    </a> --}}
+                    {{-- <a href="{{ route('billDetails.close', ['billId' => $billId]) }}" class="btn btn-info">
+                        @lang('messages.billDetails.finished_entry')
+                    </a> --}}
+                    <button type="button" id="finishBillBtn" class="btn btn-info">
+                        @lang('messages.billDetails.finished_entry')
+                    </button>
+
+
                 </div>
             </form>
 
@@ -174,3 +185,51 @@
 </div>
 <!--/End Main content container-->
 @endsection
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // const quantityInput = document.querySelector('input[name="quantity"]');
+        // const costInput = document.querySelector('input[name="cost"]');
+        const totalInput = document.getElementById('total');
+        const quantityInput = document.getElementById('quantity');
+        const costInput = document.getElementById('cost');
+        const discountInput = document.getElementById('discount');
+
+        function calculateTotal() {
+            const quantity = parseFloat(quantityInput.value) || 0;
+            const cost = parseFloat(costInput.value) || 0;
+            const discount = parseFloat(discountInput.value) || 0;
+            const total = quantity * cost -discount;
+            totalInput.value = total.toFixed(2); // أو بدون toFixed() حسب الحاجة
+        }
+
+        quantityInput.addEventListener('input', calculateTotal);
+        costInput.addEventListener('input', calculateTotal);
+        discountInput.addEventListener('input', calculateTotal);
+
+        // حساب أولي عند تحميل الصفحة لو هناك قيم مسبقة
+        calculateTotal();
+
+
+
+    });
+
+   document.addEventListener('DOMContentLoaded', function () {
+    const finishBtn = document.getElementById('finishBillBtn');
+    const printUrl = "{{ route('bill.print', ['billId' => $billId]) }}";
+    const closeUrl = "{{ route('billDetails.close', ['billId' => $billId]) }}";
+
+    finishBtn.addEventListener('click', function () {
+        const userConfirmed = confirm("هل تريد طباعة الفاتورة؟");
+
+        if (userConfirmed) {
+            // الانتقال إلى صفحة الطباعة في نفس النافذة
+            window.location.href = printUrl;
+        } else {
+            // الانتقال مباشرةً لصفحة إضافة فاتورة جديدة
+            window.location.href = closeUrl;
+        }
+    });
+});
+
+</script>

@@ -10,8 +10,6 @@
             {{-- <div class="mt-5">
                 @include('layouts.partials.alerts')
             </div> --}}
-    @include('layouts.partials.sweet_alert')
-
 
             <h1 class="heading_title" style="margin-top: 90px;">@lang('messages.employee.add_new_employee')</h1>
             <div class="form">

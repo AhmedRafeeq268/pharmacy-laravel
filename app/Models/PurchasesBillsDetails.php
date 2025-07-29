@@ -10,4 +10,14 @@ class PurchasesBillsDetails extends Model
         'bill_id','product_name','product_id','product_category','product_data','quantity','cost','total','discount',
     ];
 
+    public function product()
+    {
+        return $this->belongsTo(Product::class, 'product_id');
+    }
+
+    public function purchaseBill()
+    {
+        return $this->belongsTo(PurchasesBills::class);
+    }
+
 }

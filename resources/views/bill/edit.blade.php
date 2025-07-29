@@ -25,7 +25,7 @@
                             <label class="mb-2">@lang('messages.bill.currency_type')</label>
                             <select name="currancy_type" class="form-control">
                                 <option value="">@lang('messages.bill.currency_type')</option>
-                                @foreach ($currancies as $currancy)
+                                @foreach ($currencies as $currancy)
                                     <option value="{{ $currancy->desc_en }}"
                                         {{ old('currancy_type', $bill->currancy_type) == $currancy->desc_en ? 'selected' : '' }}>
                                         {{ $currancy->desc_en }} - {{ $currancy->desc_ar }}
@@ -68,7 +68,56 @@
                             </select>
                             @error('employee_receipt') <small class="text-danger">{{ $message }}</small> @enderror
                         </div>
-                        <div class="col-md-9"></div>
+                        <div class="col-md-3">
+                        <label class="mb-2">@lang('messages.bill.manufacturer')</label>
+                        <select name="manufacturer" class="form-control">
+                            <option value="">@lang('messages.bill.manufacturer')</option>
+                            @foreach ($manufacturers as $manufacturer)
+                                <option value="{{ $manufacturer->desc_en }}"
+                                    {{ old('manufacturer', $bill->manufacturer) == $manufacturer->desc_en ? 'selected' : '' }}>
+                                    {{ $manufacturer->desc_en }} - {{ $manufacturer->desc_ar }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="mb-2">@lang('messages.suppliers.name')</label>
+                        <select name="supplier_id" class="form-control">
+                            <option value="">@lang('messages.suppliers.name')</option>
+                            @foreach ($suppliers as $supplier)
+                                <option value="{{ $supplier->id }}"
+                                    {{ old('supplier_id', $bill->supplier_id) == $supplier->id ? 'selected' : '' }}>
+                                    {{ $supplier->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    {{-- المدفوع --}}
+                    <div class="form-group mt-2 col-md-3">
+                        <label for="paid">@lang('messages.bill.paid')</label>
+                        <input type="number" name="paid" class="form-control"
+                            value="{{ old('paid', $bill->paid) }}"
+                            placeholder="@lang('messages.bill.paid')">
+                    </div>
+
+                    {{-- الحالة --}}
+                    <div class="form-group mt-3 col-md-3">
+                        <label for="status">@lang('messages.bill.status')</label>
+                        <select name="status" class="form-control">
+                            <option value="paid" {{ old('status', $bill->status) == 'paid' ? 'selected' : '' }}>
+                                @lang('messages.bill.status_paid')
+                            </option>
+                            <option value="partial" {{ old('status', $bill->status) == 'partial' ? 'selected' : '' }}>
+                                @lang('messages.bill.status_partial')
+                            </option>
+                            <option value="unpaid" {{ old('status', $bill->status) == 'unpaid' ? 'selected' : '' }}>
+                                @lang('messages.bill.status_unpaid')
+                            </option>
+                        </select>
+                    </div>
+
                     </div>
 
                     {{-- الأزرار --}}
