@@ -124,7 +124,7 @@
                     <div class="row mt-2">
                         <div class="col-md-12 text-dir">
                             <button type="submit" class="btn btn-danger me-2">@lang('messages.save')</button>
-                            <a href="{{ route('bill.index', ['page' => request()->get('page', 1)]) }}" class="btn btn-info">@lang('messages.back_to_list')</a>
+                            <a href="{{ route('bill.index', ['page' => request()->get('page', 1)]) }}" class="btn btn-outline-info">@lang('messages.back_to_list')</a>
                         </div>
                     </div>
 

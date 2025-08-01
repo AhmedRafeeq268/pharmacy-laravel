@@ -79,7 +79,7 @@
                             <button type="submit" class="btn btn-success me-2">
                                 @lang('messages.save')
                             </button>
-                            <a href="{{ route('product.index') }}" class="btn btn-info">
+                            <a href="{{ route('product.index') }}" class="btn btn-outline-info">
                                 @lang('messages.product.view_products')
                             </a>
                         </div>

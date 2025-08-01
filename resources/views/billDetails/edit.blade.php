@@ -84,6 +84,7 @@
 
                 <div class=" mt-3">
                     <button type="submit" class="btn btn-success me-2">@lang('messages.save')</button>
+                    <a href="{{ route('billDetails.index', ['page' => request()->get('page', 1)]) }}" class="btn btn-outline-info">@lang('messages.back_to_list')</a>
                 </div>
             </form>
 

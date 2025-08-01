@@ -108,7 +108,7 @@
                     <div class="row mt-2">
                         <div class="col-md-12 text-dir">
                             <button type="submit" class="btn btn-success me-2">@lang('messages.save')</button>
-                            <a href="{{ route('bill.index') }}" class="btn btn-info">@lang('messages.bill.view_bills')</a>
+                            <a href="{{ route('bill.index') }}" class="btn btn-outline-info">@lang('messages.bill.view_bills')</a>
                         </div>
                     </div>
 

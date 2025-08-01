@@ -93,7 +93,7 @@
                     <div class="row mt-4">
                         <div class="col-md-12 text-dir">
                             <button type="submit" class="btn btn-success me-2">@lang('messages.save')</button>
-                            <a href="{{ route('supplier.index') }}" class="btn btn-info">@lang('messages.suppliers.show_suppliers')</a>
+                            <a href="{{ route('supplier.index') }}" class="btn btn-outline-info">@lang('messages.suppliers.show_suppliers')</a>
                         </div>
                     </div>
 

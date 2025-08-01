@@ -26,6 +26,7 @@ use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\DamagedItemController;
 use App\Http\Controllers\BillCertifiedController;
 use App\Http\Controllers\PurchasesBillController;
 use App\Http\Controllers\PurchaseReturnController;
@@ -166,13 +167,24 @@ Route::get('/toggle-language', function () {
 
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
+    Route::get('purchaseReturns/index', [PurchaseReturnController::class, 'index'])->name('purchaseReturns.index');
     Route::get('purchaseReturns/create', [PurchaseReturnController::class, 'create'])->name('purchaseReturns.create');
     Route::post('purchaseReturns', [PurchaseReturnController::class, 'store'])->name('purchaseReturns.store');
+    Route::delete('/purchaseReturns/{purchaseReturn}',[PurchaseReturnController::class,'destroy'])->name('purchaseReturns.destroy');
+    Route::get('/purchaseReturns/export', [PurchaseReturnController::class, 'export'])->name('purchaseReturns.printPurchaseReturnsExcel');
+    Route::get('purchaseReturns/{purchaseReturn}', [PurchaseReturnController::class, 'show'])->name('purchaseReturns.show');
+    Route::get('/purchaseReturns/{purchaseReturn}/edit',[PurchaseReturnController::class,'edit'])->name('purchaseReturns.edit');
+    Route::put('/purchaseReturns/{purchaseReturn}',[PurchaseReturnController::class,'update'])->name('purchaseReturns.update');
 
+    Route::get('/expenses/index', [ExpenseController::class, 'index'])->name('expenses.index');
     Route::get('/expenses/create', [ExpenseController::class, 'create'])->name('expenses.create');
     Route::post('/expenses/store', [ExpenseController::class, 'store'])->name('expenses.store');
     Route::get('/expenses/report', [ExpenseController::class, 'report'])->name('expenses.report');
 
+
+    Route::get('/damaged/index', [DamagedItemController::class, 'index'])->name('damaged.index');
+    Route::get('/damaged/create', [DamagedItemController::class, 'create'])->name('damaged.create');
+    Route::post('/damaged/store', [DamagedItemController::class, 'store'])->name('damaged.store');
 
     });
 

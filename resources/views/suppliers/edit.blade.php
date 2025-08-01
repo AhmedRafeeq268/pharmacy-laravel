@@ -85,6 +85,10 @@
                     <div class="row mt-4">
                         <div class="col-md-12 text-dir">
                             <button type="submit" class="btn btn-danger">@lang('messages.save')</button>
+
+                            <a href="{{ route('supplier.index') }}" class="btn btn-outline-primary px-3">
+                                <i class="bi bi-arrow-left"></i> @lang('messages.back_to_list')
+                            </a>
                         </div>
                     </div>
 

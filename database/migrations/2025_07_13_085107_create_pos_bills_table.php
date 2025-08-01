@@ -18,8 +18,10 @@ return new class extends Migration
             $table->integer('total_amount');
             $table->integer('discount');
             $table->integer('net_amount');
-            $table->integer('payment_status');
+            $table->string('payment_status')->nullable();
             $table->tinyInteger('is_closed_with_cashbox')->default(0);
+            $table->unsignedBigInteger('finished_by')->nullable();
+            $table->string('status')->default('open');
 
             $table->timestamps();
         });

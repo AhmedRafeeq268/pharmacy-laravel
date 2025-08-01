@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\BalanceStore;
 use Illuminate\Http\Request;
 use App\Models\PurchasesBills;
+use Illuminate\Support\Facades\Auth;
 use App\Models\PurchasesBillsDetails;
 
 class BillCertifiedController extends Controller
@@ -15,11 +16,11 @@ class BillCertifiedController extends Controller
         return view('certified.index',compact('billDetailsItems','billId','bills'));
     }
     public function store($billId){
-
+        $user_id = Auth::id();
         $bill = PurchasesBills::findOrFail($billId);
         $bill->update([
             'adopt_bill' => 1 ,
-            'authorized_employee' => 'ahmed' ,
+            'authorized_employee' => $user_id ,
             'certified_or_not' => 1 ,
         ]);
 
@@ -38,9 +39,10 @@ class BillCertifiedController extends Controller
     }
     public function reject(Request $request, $billId)
     {
+        $user_id = Auth::id();
         $bill = PurchasesBills::findOrFail($billId);
         $bill->certified_or_not = 0;
-        $bill->authorized_employee = 'ahmed';
+        $bill->authorized_employee = $user_id;
         $bill->adopt_bill = 0;
         $bill->save();
         $page = request()->get('page', 1);

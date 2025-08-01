@@ -124,7 +124,7 @@
                     {{-- <a href="{{ route('billDetails.close', ['billId' => $billId]) }}" class="btn btn-info">
                         @lang('messages.billDetails.finished_entry')
                     </a> --}}
-                    <button type="button" id="finishBillBtn" class="btn btn-info">
+                    <button type="button" id="finishBillBtn" class="btn btn-outline-info">
                         @lang('messages.billDetails.finished_entry')
                     </button>
 

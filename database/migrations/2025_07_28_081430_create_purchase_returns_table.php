@@ -25,6 +25,7 @@ return new class extends Migration
 
             $table->boolean('refunded_in_cash')->default(false);
             $table->foreignId('created_by')->constrained('users')->cascadeOnDelete();
+            $table->foreignId('edited_by')->constrained('users')->cascadeOnDelete();
             $table->timestamps();
         });
     }

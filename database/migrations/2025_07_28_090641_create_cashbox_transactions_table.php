@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreignId('session_id')->constrained('pos_sessions')->cascadeOnDelete();
 
             // نوع الحركة: sale, refund, expense
-            $table->enum('type', ['sale', 'refund', 'expense']);
+            $table->enum('type', ['sale', 'refund', 'expense','in','out']);
 
             // المبلغ (موجب أو سالب حسب نوع الحركة)
             $table->decimal('amount', 12, 2);

@@ -56,6 +56,9 @@
                             <button type="submit" class="btn btn-danger">
                                 @lang('messages.save')
                             </button>
+
+                            <a href="{{ route('productCategory.index') }}" class="btn btn-outline-secondary">@lang('messages.back_to_list')</a>
+
                         </div>
                     </div>
 

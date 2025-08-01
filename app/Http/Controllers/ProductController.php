@@ -20,7 +20,7 @@ class ProductController extends Controller
             ->when($search, function ($query) use ($search) {
                     $query->where('name', 'like', "%{$search}%")
                     ->orWhereHas('productCategory', fn($q) => $q->where('name', 'like', "%$search%"));
-        })->paginate(8); // حدد عدد العناصر في كل صفحة
+        })->orderBy('id', 'desc')->paginate(8); // حدد عدد العناصر في كل صفحة
 
         // إذا كان الطلب AJAX نعيد جزء الـ Table فقط
         if ($request->ajax()) {

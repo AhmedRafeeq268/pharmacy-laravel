@@ -45,6 +45,11 @@ class PurchasesBills extends Model
         return $this->belongsTo(Product::class, 'product_id');
     }
 
+    public function authorizer()
+    {
+        return $this->belongsTo(User::class, 'authorized_employee', 'id');
+    }
+
 
 
 

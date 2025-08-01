@@ -23,6 +23,9 @@ return [
         'bills' => 'الفواتير',
         'change_password' => 'تغيير كلمة المرور',
         'logout' => 'تسجيل الخروج',
+        'purchaseReturns' => 'مرتجعات الموردين',
+        'expenses' => 'المصاريف',
+        'damagedProducts' => 'المنتجات التالفة',
 
     ],
 
@@ -238,6 +241,9 @@ return [
         'is_closed_with_cashbox' => 'هل تم اغلاق الصندوق',
         'export_employees_excel' => 'طباعة بيانات الموظفين اكسل',
         'export_posBills_excel' => 'طباعة بيانات فواتير البيع اكسل',
+        'pay_cash' => 'دفع نقداً',
+        'pay_visa' => 'دفع بالفيزا',
+        'pay_debt' => 'دين',
 
 
     ],
@@ -282,7 +288,7 @@ return [
         'change_language' => 'English',
     ],
 
-    'purchaseRetern' => [
+    'purchaseReturns' => [
         'return_products_to_supplier' => 'إرجاع منتجات إلى المورد',
         'select_purchase_bill' => 'اختر فاتورة شراء:',
         'select_bill_option' => 'فاتورة رقم => #:id - المورد => :name',
@@ -294,7 +300,21 @@ return [
         'cash_refund' => 'نقداً؟',
         'save_returns' => 'حفظ المرتجعات',
         'return_products_to_supplier' => 'إرجاع منتجات للمورد',
-
+        'view_purchase_returns' => 'عرض مرتجعات الموردين',
+        'search_return' => 'ابحث باستخدام رقم الفاتورة او اسم المنتج',
+        'export_purchase_return_excel' => 'تصدير مرتجعات الموردين إلى اكسل',
+        'add_new_purchase_return' => 'إضافة مرتجعات جديدة للمورد',
+        'purchase_bill_id'    => 'رقم فاتورة الشراء',
+        'supplier_name'       => 'اسم المورد',
+        'product_name'        => 'اسم المنتج',
+        'quantity'            => 'الكمية',
+        'return_amount'       => 'المبلغ المرجع',
+        'reason'              => 'سبب الإرجاع',
+        'refunded_in_cash'    => 'تم الاسترداد نقداً',
+        'created_by'          => 'تم الإنشاء بواسطة',
+        'edited_by'          => 'تم التعديل بواسطة',
+        'session_id'          => 'رقم الجلسة',
+        'edit_purchaseReturn' => 'تعديل مرتجع المورد',
 
     ],
 
@@ -315,6 +335,16 @@ return [
         'date' => 'التاريخ',
         'type' => 'النوع',
         'total' => 'المجموع',
+    ],
+
+    'damaged' =>[
+        'record_damage_item' => 'تسجيل صنف تالف',
+        'product' => 'الصنف',
+        'select_product' => 'اختر الصنف',
+        'available' => 'المتوفر:',
+        'damaged_quantity' => 'الكمية التالفة',
+        'damage_reason' => 'سبب التلف',
+        'save_damaged_item' => 'تسجيل تالف',
     ],
 
 
@@ -357,6 +387,7 @@ return [
      'product_details'     => 'بيانات المنتج',
      'supplier_details'     => 'بيانات المورد',
      'bill_details'     => 'بيانات الفاتورة',
+     'purchaseReturns_details' => 'تفاصيل مرتجعات الموردين',
 
     'back_to_list'       => 'العودة إلى القائمة',
     'edit'               => 'تعديل',

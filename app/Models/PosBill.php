@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class PosBill extends Model
 {
     protected $fillable = [
-        'customer_id','employee_id','total_amount','discount','net_amount','payment_status','is_closed_with_cashbox'
+        'customer_id','employee_id','total_amount','discount','net_amount','payment_status','is_closed_with_cashbox','finished_by','status'
 
     ];
 

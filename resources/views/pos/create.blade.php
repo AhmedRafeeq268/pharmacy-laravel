@@ -26,7 +26,6 @@
                 </div>
             </div>
 
-
             <div class="form">
                 <form method="POST" action="{{ route('pos.store', ['pos_bill_id' => $pos_bill_id]) }}">
                     @csrf
@@ -35,27 +34,23 @@
                     <div class="row">
                         <div class="col-md-3">
                             <label class="mb-2">@lang('messages.pos.barcode')</label>
-                            <input type="number" class="form-control" id="barcode" name="barcode"
-                                   placeholder="{{ __('messages.pos.barcode') }}" value="{{ old('barcode') }}">
+                            <input type="number" class="form-control" id="barcode" name="barcode" placeholder="{{ __('messages.pos.barcode') }}" value="{{ old('barcode') }}">
                             @error('barcode') <small class="text-danger">{{ $message }}</small> @enderror
                         </div>
 
                         <div class="col-md-3">
                             <label class="mb-2">@lang('messages.pos.product_name')</label>
-                            <input type="text" class="form-control" id="product_name" name="product_name"
-                                   placeholder="{{ __('messages.pos.product_name') }}" disabled>
+                            <input type="text" class="form-control" id="product_name" name="product_name" placeholder="{{ __('messages.pos.product_name') }}" disabled>
                         </div>
 
                         <div class="col-md-3">
                             <label class="mb-2">@lang('messages.pos.unit_price')</label>
-                            <input type="number" class="form-control" id="unit_price" name="unit_price"
-                                   placeholder="{{ __('messages.pos.unit_price') }}" disabled>
+                            <input type="number" class="form-control" id="unit_price" name="unit_price" placeholder="{{ __('messages.pos.unit_price') }}" disabled>
                         </div>
 
                         <div class="col-md-3">
                             <label class="mb-2">@lang('messages.pos.quantity')</label>
-                            <input type="number" class="form-control" id="quantity" name="quantity"
-                                   placeholder="{{ __('messages.pos.quantity') }}">
+                            <input type="number" class="form-control" id="quantity" name="quantity" placeholder="{{ __('messages.pos.quantity') }}">
                             @error('quantity') <small class="text-danger">{{ $message }}</small> @enderror
                         </div>
                     </div>
@@ -68,23 +63,33 @@
                                 @lang('messages.pos.add_to_cart')
                             </button>
 
-                            <button type="button" class="btn btn-info d-flex align-items-center gap-2"
-                                    onclick="submitFinishForm()">
+                            <button type="button" class="btn btn-info d-flex align-items-center gap-2" onclick="submitFinishForm()">
                                 <i class="bi bi-check-circle-fill"></i>
                                 @lang('messages.pos.finished_entry')
                             </button>
-
-
-
                         </div>
                     </div>
-                </form>
 
-                {{-- نموذج الإنهاء (مخفي) --}}
-                <form id="finishForm" method="POST" action="{{ route('pos.finish', ['pos_bill_id' => $pos_bill_id ?: 0]) }}">
+                    {{-- أزرار الدفع --}}
+                    <div class="row mt-4">
+                        <div class="col-auto d-flex gap-2">
+                            <button type="button" class="btn btn-primary d-flex align-items-center gap-2" onclick="submitFinishForm('cash')">
+                                <i class="bi bi-cash"></i>
+                                @lang('messages.pos.pay_cash')
+                            </button>
 
-                    @csrf
-                    <input type="hidden" name="discount" id="final_discount">
+                            <button type="button" class="btn btn-secondary d-flex align-items-center gap-2" onclick="submitFinishForm('visa')">
+                                <i class="bi bi-credit-card"></i>
+                                @lang('messages.pos.pay_visa')
+                            </button>
+
+                            <button type="button" class="btn btn-warning d-flex align-items-center gap-2" onclick="submitFinishForm('debt')">
+                                <i class="bi bi-receipt"></i>
+                                @lang('messages.pos.pay_debt')
+                            </button>
+                        </div>
+                    </div>
+
                 </form>
             </div>
 
@@ -95,32 +100,110 @@
             <div class="row mt-3">
                 <div class="col-md-3">
                     <label class="mb-2">@lang('messages.pos.total_amount')</label>
-                    <input type="number" class="form-control" id="total_amount" name="total_amount"
-                           placeholder="{{ __('messages.pos.total_amount') }}" disabled
-                           value="{{ $posBillsDetails->sum('price') ?? 0 }}">
+                    <input type="number" class="form-control" id="total_amount" name="total_amount" disabled value="{{ $posBillsDetails->sum('price') ?? 0 }}">
                 </div>
 
                 <div class="col-md-3">
                     <label class="mb-2">@lang('messages.pos.discount')</label>
-                    <input type="number" class="form-control" id="discount" name="discount"
-                           placeholder="{{ __('messages.pos.discount') }}"
-                           value="{{ old('discount', 0) }}">
+                    <input type="number" class="form-control" id="discount" name="discount" value="{{ old('discount', 0) }}">
                 </div>
 
                 <div class="col-md-3">
                     <label class="mb-2">@lang('messages.pos.net_amount')</label>
-                    <input type="number" class="form-control" id="net_amount" name="net_amount"
-                           placeholder="{{ __('messages.pos.net_amount') }}" disabled
-                           value="{{ ($posBillsDetails->sum('price') ?? 0) - old('discount', 0) }}">
+                    <input type="number" class="form-control" id="net_amount" name="net_amount" disabled value="{{ ($posBillsDetails->sum('price') ?? 0) - old('discount', 0) }}">
                 </div>
             </div>
-        </div>
+
+            {{-- مودال اختيار الزبون عند الدفع بالدين --}}
+            <div class="modal fade" id="debtModal" tabindex="-1" aria-labelledby="debtModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <form id="debtForm" class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="debtModalLabel">اختر الزبون لتسجيل الدين</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+                        </div>
+                        <div class="modal-body">
+                            <label for="customer_id" class="form-label">الزبون</label>
+                            <select id="customer_id" name="customer_id" class="form-select" required>
+                                <option value="">-- اختر الزبون --</option>
+                                @foreach($customers as $customer)
+                                    <option value="{{ $customer->id }}">{{ $customer->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="submit" class="btn btn-primary">تأكيد</button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div> {{-- نهاية page_content --}}
     </div>
 </div>
 @endsection
-
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
 @push('scripts')
 <script>
+// تعريف دالة submitFinishForm عالمياً حتى تُعرف قبل استدعائها من الـ HTML
+window.submitFinishForm = function(paymentType) {
+    const discountInput = document.getElementById('discount');
+    const discountValue = discountInput ? discountInput.value || 0 : 0;
+
+    const debtModalEl = document.getElementById('debtModal');
+    const debtModal = new bootstrap.Modal(debtModalEl);
+
+    if (paymentType === 'debt') {
+        debtModal.show();
+        return;
+    }
+
+    if (paymentType === 'cash') {
+        sendFinishRequest({ discount: discountValue, payment_status: 'cash' });
+        return;
+    }
+
+    if (paymentType === 'visa') {
+        alert('ميزة الدفع بالفيزا سيتم تنفيذها لاحقاً');
+        return;
+    }
+};
+
+// دالة لإرسال بيانات الفاتورة لإنهاء العملية
+function sendFinishRequest(payload) {
+    const url = "{{ route('pos.finish', ['pos_bill_id' => $pos_bill_id ?: 0]) }}";
+
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify(payload)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (!data.success) {
+            alert(data.message || 'حدث خطأ أثناء حفظ الفاتورة.');
+            return;
+        }
+
+        if (confirm('هل تريد طباعة الفاتورة؟')) {
+            window.open(`/pos/print/${data.bill_id}`, '_blank');
+            setTimeout(() => {
+                window.location.href = "{{ route('pos.index') }}";
+            }, 1500);
+        } else {
+            window.location.href = "{{ route('pos.create') }}";
+        }
+    })
+    .catch(error => {
+        console.error('خطأ في الحفظ:', error);
+        alert('حدث خطأ في الحفظ، الرجاء المحاولة لاحقاً.');
+    });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     const barcodeInput     = document.getElementById('barcode');
     const productNameInput = document.getElementById('product_name');
@@ -165,7 +248,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const discount = parseFloat(discountInput.value) || 0;
         const total    = parseFloat(totalAmountInput.value) || 0;
         const net      = total - discount;
-
         netAmountInput.value = (net > 0 ? net : 0).toFixed(2);
     }
 
@@ -193,39 +275,27 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
     });
 
-    window.submitFinishForm = function () {
-        const discountValue = document.getElementById('discount').value || 0;
-        const url = document.getElementById('finishForm').action;
+    // مودال اختيار الزبون عند الدفع بالدين
+    const debtModalEl = document.getElementById('debtModal');
+    const debtModal = new bootstrap.Modal(debtModalEl);
+    const debtForm = document.getElementById('debtForm');
 
-        fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-            },
-            body: JSON.stringify({ discount: discountValue })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (!data.success) {
-                alert(data.message || 'حدث خطأ أثناء حفظ الفاتورة.');
-                return;
-            }
+    debtForm.addEventListener('submit', function(e) {
+        e.preventDefault();
 
-            // عرض رسالة الطباعة
-            if (confirm('هل تريد طباعة الفاتورة؟')) {
-                window.open(`/pos/print/${data.bill_id}`, '_blank');
-            }
+        const customerId = debtForm.customer_id.value;
+        if (!customerId) {
+            alert('يرجى اختيار الزبون');
+            return;
+        }
 
-            // إعادة تحميل الصفحة بعد الحفظ
-            window.location.href = "{{ route('pos.create') }}";
-        })
-        .catch(error => {
-            console.error('خطأ في الحفظ:', error);
-            alert('حدث خطأ في الحفظ، الرجاء المحاولة لاحقاً.');
-        });
-    };
-
+        const discountValue = discountInput.value || 0;
+        sendFinishRequest({ discount: discountValue, payment_status: 'debt', customer_id: customerId });
+        debtModal.hide();
+    });
 });
 </script>
 @endpush
+
+
+

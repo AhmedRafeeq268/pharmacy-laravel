@@ -48,7 +48,6 @@
                 <td colspan="3">المجموع</td>
                 <td>{{ number_format($posBill->total_amount, 2) }}</td>
             </tr>
-
             <tr class="total">
                 <td colspan="3">الخصم</td>
                 <td>{{ number_format($posBill->discount, 2) }}</td>
@@ -57,9 +56,21 @@
                 <td colspan="3">الإجمالي بعد الخصم</td>
                 <td>{{ number_format($posBill->total_amount - $posBill->discount, 2) }}</td>
             </tr>
-
         </tfoot>
     </table>
+
+    {{-- طريقة الدفع --}}
+    <p style="margin-top: 20px;">
+        طريقة الدفع:
+        <strong>
+            @switch($posBill->payment_status)
+                @case('cash') نقداً @break
+                @case('visa') فيزا @break
+                @case('debt') دين @break
+                @default غير محددة
+            @endswitch
+        </strong>
+    </p>
 
     <div class="footer">
         <p>شكرًا لتعاملكم معنا!</p>
@@ -71,4 +82,3 @@
     window.print();
 </script>
 </html>
-

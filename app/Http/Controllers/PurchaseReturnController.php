@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\PurchaseReturnsExport;
 use App\Models\Product;
 use App\Models\PosSession;
 use Illuminate\Http\Request;
@@ -10,15 +11,48 @@ use App\Models\PurchasesBills;
 use App\Models\CashBoxTransaction;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Maatwebsite\Excel\Facades\Excel;
 
 class PurchaseReturnController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        $search = $request->input('search');
+
+        $purchaseReturns = PurchaseReturn::with(['purchaseBill','supplier','product','creator'])
+            ->when($search, function ($query) use ($search) {
+                    $query->where('purchase_bill_id', 'like', "%{$search}%")
+                    ->orWhereHas('supplier', fn($q) => $q->where('name', 'like', "%$search%"))
+                    ->orWhereHas('product', fn($q) => $q->where('name', 'like', "%$search%"));
+        })->orderBy('id', 'desc')->paginate(8); // حدد عدد العناصر في كل صفحة
+
+        // إذا كان الطلب AJAX نعيد جزء الـ Table فقط
+        if ($request->ajax()) {
+            return view('purchaseReturns._table', compact('purchaseReturns'))->render();
+        }
+
+        return view('purchaseReturns.index',compact('purchaseReturns'));
+    }
+
+    public function export(Request $request)
+    {
+        $search = $request->input('search');
+
+        $purchaseReturns = PurchaseReturn::with(['purchaseBill','supplier','product','creator'])
+            ->when($search, function ($query) use ($search) {
+                    $query->where('purchase_bill_id', 'like', "%{$search}%")
+                    ->orWhereHas('supplier', fn($q) => $q->where('name', 'like', "%$search%"))
+                    ->orWhereHas('product', fn($q) => $q->where('name', 'like', "%$search%"));
+        })->paginate(8);
+
+        if ($purchaseReturns->isEmpty()) {
+            return redirect()->back()->with('error', 'لا توجد بيانات لتصديرها.');
+        }
+
+        return Excel::download(new PurchaseReturnsExport($search), 'purchaseReturn.xlsx');
     }
 
     /**
@@ -42,7 +76,7 @@ class PurchaseReturnController extends Controller
             });
         }
 
-        return view('purchase_returns.create', compact('bills', 'bill'));
+        return view('purchaseReturns.create', compact('bills', 'bill'));
     }
 
 
@@ -129,32 +163,98 @@ class PurchaseReturnController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(PurchaseReturn $purchaseReturn)
-    {
-        //
+     public function show($id){
+        $purchaseReturn = PurchaseReturn::with('purchaseBill','supplier','product','creator')->findOrFail($id);
+        return view('purchaseReturns.show',compact('purchaseReturn'));
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(PurchaseReturn $purchaseReturn)
+    public function edit($purchaseReturnId)
     {
-        //
+        $purchaseReturn = PurchaseReturn::findOrFail($purchaseReturnId);
+        return view('purchaseReturns.edit',compact('purchaseReturn'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, PurchaseReturn $purchaseReturn)
-    {
-        //
+    public function update(Request $request ,$purchaseReturnId){
+        $request->validate([
+        'quantity' => 'required|integer|min:1',
+        'return_amount' => 'required|numeric|min:0',
+        'reason' => 'nullable|string|max:255',
+        'refunded_in_cash' => 'required|boolean',
+        ]);
+
+        $purchaseReturn = PurchaseReturn::findOrFail($purchaseReturnId);
+
+        // القيم القديمة
+        $oldQuantity = $purchaseReturn->quantity;
+        $oldAmount = $purchaseReturn->return_amount;
+        $oldRefunded = $purchaseReturn->refunded_in_cash;
+        $productId = $purchaseReturn->product_id;
+
+        // القيم الجديدة من الطلب
+        $newQuantity = $request->quantity;
+        $newAmount = $request->return_amount;
+        $newRefunded = $request->refunded_in_cash;
+
+        // تحديث المرتجع
+        $purchaseReturn->update([
+            'quantity' => $newQuantity,
+            'return_amount' => $newAmount,
+            'reason' => $request->reason,
+            'refunded_in_cash' => $newRefunded,
+            'edited_by' => Auth::id() ?? 1,
+        ]);
+
+        // تعديل المخزون (فرق الكمية)
+        $quantityDiff = $newQuantity - $oldQuantity;
+        if ($quantityDiff != 0) {
+            // إذا الفرق موجب ⇒ نخصم من المخزون
+            // إذا الفرق سالب ⇒ نعيد للمخزون
+            Product::where('id', $productId)->increment('quantity', -$quantityDiff);
+        }
+
+        // تعديل حركة الصندوق إذا كان تم رد نقداً
+        $sessionId = PosSession::where('user_id', Auth::id())
+                       ->where('status', 'open')
+                       ->latest()
+                       ->value('id');
+        if ($newRefunded) {
+            $amountDiff = $newAmount - $oldAmount;
+            if ($amountDiff != 0 && $sessionId) {
+                $type = $amountDiff > 0 ? 'expense' : 'income'; // زيادة = expense، نقصان = income
+                CashBoxTransaction::create([
+                    'session_id' => $sessionId,
+                    'type' => $type,
+                    'amount' => abs($amountDiff),
+                    'note' => 'تعديل مبلغ مرتجع المورد (ID: ' . $productId . ')',
+                    'created_at' => now(),
+                ]);
+            }
+        }
+        $page = $request->get('page', 1);
+        return to_route('purchaseReturns.index',['page' => $page])
+        ->with('success', __('messages.updated'));
     }
+
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(PurchaseReturn $purchaseReturn)
+    public function destroy(Request $request ,$purchaseReturnId)
     {
-        //
+        $purchaseReturn = PurchaseReturn::find($purchaseReturnId);
+        if (!$purchaseReturn)
+        {
+            return redirect()->back()->with('error', __('messages.not_found'));
+        }
+        $purchaseReturn->delete();
+        $page = $request->get('page', 1);
+        return to_route('purchaseReturns.index',['page' => $page])
+        ->with('success', __('messages.deleted'));
     }
 }

@@ -23,6 +23,10 @@ return[
         'bills' => 'Bills',
         'change_password' => 'Change Password',
         'logout' => 'LogOut',
+        'purchaseReturns' => 'Purchase Returns',
+        'expenses' => 'Expenses',
+        'damagedProducts' => 'Damaged Products'
+
 
     ],
      'farmacy'=> [
@@ -235,10 +239,13 @@ return[
         'confirm_close_cashbox' => 'Are you sure you want to close the cashbox?',
         'print_bosbill' => 'Print previous Bill ',
         'ask_to_print' => 'Would you like to print the invoice?',
-        'search_pos'   =>   'Search by invoice number, customer name, or employee name',
+        'search_pos'   =>   'Search by bill number, customer name, or employee name',
         'pos_number'   =>   'Pos Bill Number',
         'is_closed_with_cashbox' => 'Is losed With Cashbox',
         'export_posBills_excel' => 'Export PosBills Data to Excel',
+        'pay_cash' => 'Pay Cash',
+        'pay_visa' => 'Pay by Visa',
+        'pay_debt' => 'Debt',
 
 
     ],
@@ -284,7 +291,7 @@ return[
     ],
 
 
-    'purchaseRetern' => [
+    'purchaseReturns' => [
         'return_products_to_supplier' => 'Return Products to Supplier',
         'select_purchase_bill' => 'Select Purchase Bill:',
         'select_bill_option' => 'Bill => #:id - Supplier => :name',
@@ -296,6 +303,21 @@ return[
         'cash_refund' => 'Cash Refund?',
         'save_returns' => 'Save Returns',
         'return_products_to_supplier' => 'Return Products to Supplier',
+        'view_purchase_returns' => 'View Purchase Returns',
+        'search_return' =>'Search by Bill Number or Product Name',
+        'export_purchase_return_excel' => 'Export Purchase Returns to Excel',
+        'add_new_purchase_return' => 'Add New Purchase Returns',
+        'purchase_bill_id'    => 'Purchase Bill ID',
+        'supplier_name'       => 'Supplier Name',
+        'product_name'        => 'Product Name',
+        'quantity'            => 'Quantity',
+        'return_amount'       => 'Return Amount',
+        'reason'              => 'Reason',
+        'refunded_in_cash'    => 'Refunded in Cash',
+        'created_by'          => 'Created By',
+        'edited_by'          => 'Edited By',
+        'session_id'          => 'Session ID',
+        'edit_purchaseReturn' => 'Edit Purchase Return',
 
 
     ],
@@ -317,6 +339,16 @@ return[
         'date' => 'Date',
         'type' => 'Type',
         'total' => 'Total',
+    ],
+
+    'damaged' =>[
+        'record_damage_item' => 'Record Damaged Item',
+        'product' => 'Product',
+        'select_product' => 'Select Product',
+        'available' => 'Available:',
+        'damaged_quantity' => 'Damaged Quantity',
+        'damage_reason' => 'Reason for Damage',
+        'save_damaged_item' => 'Save Damaged Item',
     ],
 
     'localization' => 'en',
@@ -357,6 +389,8 @@ return[
         'product_details'     => 'Product Details',
         'supplier_details'     => 'Supplier Details',
         'bill_details'     => 'Bill Details',
+        'purchaseReturns_details' => 'Purchase Returns Details',
+
 
 
         'back_to_list'       => 'Back to List',

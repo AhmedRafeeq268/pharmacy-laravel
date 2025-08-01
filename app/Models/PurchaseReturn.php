@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class PurchaseReturn extends Model
 {
     protected $fillable = [
-        'purchase_bill_id','supplier_id','product_id','quantity','return_amount','reason','refunded_in_cash','created_by','session_id'
+        'purchase_bill_id','supplier_id','product_id','quantity','return_amount','reason','refunded_in_cash','created_by','session_id','edited_by'
     ];
 
     public function purchaseBill() {
@@ -34,5 +34,9 @@ class PurchaseReturn extends Model
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+    public function editor()
+    {
+        return $this->belongsTo(User::class, 'edited_by');
     }
 }

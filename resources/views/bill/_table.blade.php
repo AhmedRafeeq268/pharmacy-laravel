@@ -27,7 +27,7 @@
                 <td>{{ $bill->paid }}</td>
                 <td>{{ $bill->employee_receipt }}</td>
                 <td>{{ $bill->adopt_bill }}</td>
-                <td>{{ $bill->authorized_employee }}</td>
+                <td>{{ $bill->authorizer ? $bill->authorizer->name : '' }}</td>
                 <td>{{ $bill->certified_or_not }}</td>
                 <td>
                     <div class="d-flex justify-content-center align-items-center flex-wrap gap-1">

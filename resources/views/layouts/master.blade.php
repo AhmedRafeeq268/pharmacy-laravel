@@ -5,6 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="csrf-token" content="{{ csrf_token() }}">
+
     <title>@yield('title')</title>
 
     <link href="{{ asset('css/bootstrap.min.css') }}" rel="stylesheet" />
@@ -223,6 +224,15 @@
                                 <ul class="drop_main_menu">
                                     <li><a href="{{ route('pos.create') }}">@lang('messages.master.add_new ')</a></li>
                                     <li><a href="{{ route('pos.index') }}">@lang('messages.master.view_all ')</a></li>
+                                </ul>
+                            </li>
+                            <li>
+                                <a href="#">
+                                    <i class="bi bi-arrow-return-left me-1"></i>@lang('messages.master.purchaseReturns')
+                                </a>
+                                <ul class="drop_main_menu">
+                                    <li><a href="{{ route('purchaseReturns.create') }}">@lang('messages.master.add_new ')</a></li>
+                                    <li><a href="{{ route('purchaseReturns.index') }}">@lang('messages.master.view_all ')</a></li>
                                 </ul>
                             </li>
                         </ul>

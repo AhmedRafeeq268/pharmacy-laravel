@@ -34,7 +34,7 @@
 
                         <form action="{{ route('product.destroy', ['product' => $product->id, 'page' => request()->get('page')]) }}"
                             method="POST"
-                            onsubmit="return confirm('@lang('messages.are_you_need_print_bill')')"
+                            onsubmit="return confirm('Are you sure?')"
                             class="d-inline m-0 p-0 btn-sm">
                             @csrf
                             @method('DELETE')
