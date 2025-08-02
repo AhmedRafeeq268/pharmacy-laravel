@@ -2,14 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Debt;
 use App\Models\PosBill;
 use App\Models\Product;
+use App\Models\customer;
 use App\Models\PosSession;
 use Illuminate\Http\Request;
 use App\Models\PosBillDetails;
 use App\Exports\PosBillsExport;
 use App\Models\CashBoxTransaction;
-use App\Models\customer;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;
@@ -179,99 +180,69 @@ class PosBillController extends Controller
         ]);
     }
 
-    // public function finish(Request $request, $pos_bill_id)
-    // {
-    //     $validated = $request->validate([
-    //         'discount'       => 'nullable|numeric|min:0',
-    //         'payment_status' => 'required|in:cash,visa,debt',  // تعديل هنا ليطابق الحقل الجديد
-    //     ]);
-
-    //     $discount      = $validated['discount'] ?? 0;
-    //     $paymentStatus = $validated['payment_status'];
-
-    //     $posBill = PosBill::findOrFail($pos_bill_id);
-
-    //     $total    = $posBill->details()->sum('price');
-    //     $netAmount = max($total - $discount, 0);
-
-    //     $posBill->update([
-    //         'total_amount'   => $total,
-    //         'discount'       => $discount,
-    //         'net_amount'     => $netAmount,
-    //         'payment_status' => $paymentStatus,  // تحديث الحقل هنا
-    //         'finished_by'    => Auth::id(),
-    //         'status'         => 'finished',
-    //     ]);
-
-    //     // تسجيل حركة مالية إذا كانت طريقة الدفع نقداً أو فيزا
-    //     if (in_array($paymentStatus, ['cash', 'visa'])) {
-    //         CashBoxTransaction::create([
-    //             'amount'      => $netAmount,
-    //             'type'        => 'in',
-    //             'description' => __('messages.pos.payment_' . $paymentStatus) . ' - فاتورة #' . $posBill->id,
-    //             'pos_bill_id' => $posBill->id,
-    //             'session_id'  => $posBill->session_id,
-    //         ]);
-    //     }
-
-    //     return response()->json([
-    //         'success' => true,
-    //         'bill_id' => $posBill->id,
-    //         'message' => __('messages.pos.finished_entry'),
-    //     ]);
-    // }
 
     public function finish(Request $request, $pos_bill_id)
-    {
-        $validated = $request->validate([
-            'discount'       => 'nullable|numeric|min:0',
-            'payment_status' => 'required|in:cash,visa,debt',
-            'customer_id'    => 'required_if:payment_status,debt|nullable|exists:customers,id',
-        ]);
+{
+    $validated = $request->validate([
+        'discount'       => 'nullable|numeric|min:0',
+        'payment_status' => 'required|in:cash,visa,debt',
+        'customer_id'    => 'required_if:payment_status,debt|nullable|exists:customers,id',
+    ]);
 
-        $discount      = $validated['discount'] ?? 0;
-        $paymentStatus = $validated['payment_status'];
+    $discount      = $validated['discount'] ?? 0;
+    $paymentStatus = $validated['payment_status'];
 
-        $posBill = PosBill::findOrFail($pos_bill_id);
+    $posBill = PosBill::findOrFail($pos_bill_id);
 
-        $total     = $posBill->details()->sum('price');
-        $netAmount = max($total - $discount, 0);
+    $total     = $posBill->details()->sum('price');
+    $netAmount = max($total - $discount, 0);
 
-        // في حالة الدفع بالدين يجب أن يكون هناك customer_id
-        if ($paymentStatus === 'debt' && empty($validated['customer_id'])) {
-            return response()->json([
-                'success' => false,
-                'message' => 'يجب اختيار الزبون عند الدفع بالدين.'
-            ], 422);
-        }
-
-        $posBill->update([
-            'total_amount'   => $total,
-            'discount'       => $discount,
-            'net_amount'     => $netAmount,
-            'payment_status' => $paymentStatus,
-            'customer_id'    => $paymentStatus === 'debt' ? $validated['customer_id'] : $posBill->customer_id,
-            'finished_by'    => Auth::id(),
-            'status'         => 'finished',
-        ]);
-
-        // تسجيل حركة مالية فقط عند الكاش أو الفيزا
-        if (in_array($paymentStatus, ['cash', 'visa'])) {
-            CashBoxTransaction::create([
-                'amount'      => $netAmount,
-                'type'        => 'in',
-                'description' => __('messages.pos.payment_' . $paymentStatus) . ' - فاتورة #' . $posBill->id,
-                'pos_bill_id' => $posBill->id,
-                'session_id'  => $posBill->session_id,
-            ]);
-        }
-
+    if ($paymentStatus === 'debt' && empty($validated['customer_id'])) {
         return response()->json([
-            'success' => true,
-            'bill_id' => $posBill->id,
-            'message' => __('messages.pos.finished_entry'),
+            'success' => false,
+            'message' => 'يجب اختيار الزبون عند الدفع بالدين.'
+        ], 422);
+    }
+
+    // تحديث بيانات الفاتورة
+    $posBill->update([
+        'total_amount'   => $total,
+        'discount'       => $discount,
+        'net_amount'     => $netAmount,
+        'payment_status' => $paymentStatus,
+        'customer_id'    => $paymentStatus === 'debt' ? $validated['customer_id'] : $posBill->customer_id,
+        'finished_by'    => Auth::id(),
+        'status'         => 'finished',
+    ]);
+
+    if ($paymentStatus === 'debt') {
+        // إنشاء سجل دين جديد خاص بهذه الفاتورة والزبون
+        Debt::create([
+            'customer_id'      => $validated['customer_id'],
+            'pos_bill_id'      => $posBill->id,
+            'total_amount'     => $netAmount,
+            'remaining_amount' => $netAmount,
+            'status'           => 'open', // فاتورة مفتوحة الدين
+        ]);
+    } else {
+        // تسجيل حركة مالية عند الكاش أو الفيزا
+        CashBoxTransaction::create([
+            'amount'      => $netAmount,
+            'type'        => 'in',
+            'description' => __('messages.pos.payment_' . $paymentStatus) . ' - فاتورة #' . $posBill->id,
+            'pos_bill_id' => $posBill->id,
+            'session_id'  => $posBill->session_id,
         ]);
     }
+
+    return response()->json([
+        'success' => true,
+        'bill_id' => $posBill->id,
+        'message' => __('messages.pos.finished_entry'),
+    ]);
+}
+
+
 
 
     public function closeCashbox(Request $request)

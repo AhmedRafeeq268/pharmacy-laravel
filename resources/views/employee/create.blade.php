@@ -7,9 +7,6 @@
 <div class="main_content_container">
     <div class="main_container main_menu_open">
         <div class="page_content">
-            {{-- <div class="mt-5">
-                @include('layouts.partials.alerts')
-            </div> --}}
 
             <h1 class="heading_title" style="margin-top: 90px;">@lang('messages.employee.add_new_employee')</h1>
             <div class="form">

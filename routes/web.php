@@ -15,6 +15,7 @@ use App\Models\PurchasesBillsDetails;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Session;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\DebtController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\CodesTbController;
 use App\Http\Controllers\ExpenseController;
@@ -155,6 +156,11 @@ Route::get('/toggle-language', function () {
     Route::post('pos/closeCashbox',[PosBillController::class,'closeCashbox'])->name('pos.closeCashbox');
     Route::get('/pos/print/{id}',[PosBillController::class,'print'])->name('pos.print');
     Route::get('/pos/export', [PosBillController::class, 'export'])->name('pos.printPosBillsExcel');
+
+    // عرض صفحة البحث والدين
+    Route::get('/debts/search', [DebtController::class, 'searchForm'])->name('debts.searchForm');
+    Route::get('/debts/ajax/{customer}', [DebtController::class, 'ajaxDebts'])->name('debts.ajax');
+    Route::post('/debts/pay', [DebtController::class, 'payDebt'])->name('debts.pay');
 
 
     Route::get('/change-password', [AuthController::class, 'changePasswordForm'])->name('password.change');
