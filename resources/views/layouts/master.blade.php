@@ -235,6 +235,24 @@
                                     <li><a href="{{ route('purchaseReturns.index') }}">@lang('messages.master.view_all ')</a></li>
                                 </ul>
                             </li>
+                            <li>
+                                <a href="#">
+                                    <i class="bi bi-arrow-return-left me-1"></i>@lang('messages.master.posReturns')
+                                </a>
+                                <ul class="drop_main_menu">
+                                    <li><a href="{{ route('salesReturn.create') }}">@lang('messages.master.add_new ')</a></li>
+                                    <li><a href="{{ route('salesReturn.index') }}">@lang('messages.master.view_all ')</a></li>
+                                </ul>
+                            </li>
+                            <li>
+                                <a href="#">
+                                    <i class="bi bi-trash me-1 text-danger"></i>@lang('messages.master.damaged')
+                                </a>
+                                <ul class="drop_main_menu">
+                                    <li><a href="{{ route('damaged.create') }}">@lang('messages.master.add_new ')</a></li>
+                                    <li><a href="{{ route('damaged.index') }}">@lang('messages.master.view_all ')</a></li>
+                                </ul>
+                            </li>
                         </ul>
                     </li>
 
@@ -246,6 +264,22 @@
                             <li><a href="">@lang('messages.master.add_new ')</a></li>
                             <li><a href="">@lang('messages.master.view_all ')</a></li>
                         </ul>
+                    </li>
+                    <li>
+                        <a href="{{ route('debts.index') }}">
+                            <i class="bi bi-receipt me-2"></i>@lang('messages.master.debts')
+                        </a>
+
+                    </li>
+                    <li>
+                        <a href="#">
+                            <i class="bi me-2"></i>@lang('messages.master.expenses')
+                        </a>
+                        <ul class="drop_main_menu">
+                            <li><a href="{{ route('expenses.create') }}">@lang('messages.master.add_new ')</a></li>
+                            <li><a href="{{ route('expenses.index') }}">@lang('messages.master.view_all ')</a></li>
+                        </ul>
+
                     </li>
                 </ul>
             </div>
@@ -276,6 +310,15 @@
         })
     });
 </script>
+
+
+<script>
+    window.addEventListener("unload", function () {
+        navigator.sendBeacon("{{ route('force.logout') }}");
+    });
+</script>
+
+
 
 
 @stack('scripts')

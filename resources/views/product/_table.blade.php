@@ -6,6 +6,7 @@
             <th scope="col">@lang('messages.product.manufacturer')</th>
             <th scope="col">@lang('messages.product.product_category')</th>
             <th scope="col">@lang('messages.product.unit_price')</th>
+            <th scope="col">@lang('messages.product.quantity')</th>
             <th scope="col">@lang('messages.product.product_image')</th>
             <th scope="col"></th>
         </tr>
@@ -18,6 +19,7 @@
                 <td>{{ $product->manufacture_company ?? '-' }}</td>
                 <td>{{ $product->ProductCategory->name ?? '-' }}</td>
                 <td>{{ $product->unit_price ?? '-' }}</td>
+                <td>{{ $product->quantity ?? '0' }}</td>
                 <td>
                     @if($product->image_path)
                         <img src="{{ asset('storage/' . $product->image_path) }}" alt="{{ $product->name }}" width="50" height="50" class="rounded">

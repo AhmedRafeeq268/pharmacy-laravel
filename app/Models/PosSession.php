@@ -15,4 +15,9 @@ class PosSession extends Model
     {
         return $this->hasMany(CashBoxTransaction::class, 'session_id');
     }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
 }

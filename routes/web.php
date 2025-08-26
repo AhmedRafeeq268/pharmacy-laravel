@@ -6,9 +6,10 @@ use App\Exports\BosBillsExport;
 use App\Exports\ProductsExport;
 use App\Models\ProductCategory;
 use App\Exports\CustomersExport;
-
 use App\Exports\EmployeesExport;
 use App\Exports\SuppliersExport;
+use App\Exports\SalesReturnExport;
+use App\Exports\DamagedItemsExport;
 use Illuminate\Support\Facades\App;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Models\PurchasesBillsDetails;
@@ -17,9 +18,12 @@ use Illuminate\Support\Facades\Session;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DebtController;
 use App\Http\Controllers\LocaleController;
+use App\Http\Controllers\LogoutController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\CodesTbController;
 use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\FarmacyController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PosBillController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\customerController;
@@ -28,6 +32,7 @@ use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\DamagedItemController;
+use App\Http\Controllers\SalesReturnController;
 use App\Http\Controllers\BillCertifiedController;
 use App\Http\Controllers\PurchasesBillController;
 use App\Http\Controllers\PurchaseReturnController;
@@ -155,12 +160,17 @@ Route::get('/toggle-language', function () {
     Route::post('/pos/finish/{pos_bill_id}', [PosBillController::class, 'finish'])->name('pos.finish');
     Route::post('pos/closeCashbox',[PosBillController::class,'closeCashbox'])->name('pos.closeCashbox');
     Route::get('/pos/print/{id}',[PosBillController::class,'print'])->name('pos.print');
+    Route::get('/pos/cashboxReport/{session}',[PosBillController::class,'cashboxReport'])->name('pos.cashboxReport');
     Route::get('/pos/export', [PosBillController::class, 'export'])->name('pos.printPosBillsExcel');
 
     // عرض صفحة البحث والدين
+    Route::get('debts',[DebtController::class,'index'])->name('debts.index');
     Route::get('/debts/search', [DebtController::class, 'searchForm'])->name('debts.searchForm');
     Route::get('/debts/ajax/{customer}', [DebtController::class, 'ajaxDebts'])->name('debts.ajax');
     Route::post('/debts/pay', [DebtController::class, 'payDebt'])->name('debts.pay');
+    Route::get('/debts/customer/{customer_id}/{total_remaining?}', [DebtController::class, 'show'])->name('debts.show');
+    Route::delete('/debts/{debt}',[DebtController::class,'destroy'])->name('debts.destroy');
+    Route::get('/debts/export', [DebtController::class, 'export'])->name('debts.printDebtsExcel');
 
 
     Route::get('/change-password', [AuthController::class, 'changePasswordForm'])->name('password.change');
@@ -173,7 +183,7 @@ Route::get('/toggle-language', function () {
 
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-    Route::get('purchaseReturns/index', [PurchaseReturnController::class, 'index'])->name('purchaseReturns.index');
+    Route::get('purchaseReturns', [PurchaseReturnController::class, 'index'])->name('purchaseReturns.index');
     Route::get('purchaseReturns/create', [PurchaseReturnController::class, 'create'])->name('purchaseReturns.create');
     Route::post('purchaseReturns', [PurchaseReturnController::class, 'store'])->name('purchaseReturns.store');
     Route::delete('/purchaseReturns/{purchaseReturn}',[PurchaseReturnController::class,'destroy'])->name('purchaseReturns.destroy');
@@ -182,15 +192,47 @@ Route::get('/toggle-language', function () {
     Route::get('/purchaseReturns/{purchaseReturn}/edit',[PurchaseReturnController::class,'edit'])->name('purchaseReturns.edit');
     Route::put('/purchaseReturns/{purchaseReturn}',[PurchaseReturnController::class,'update'])->name('purchaseReturns.update');
 
-    Route::get('/expenses/index', [ExpenseController::class, 'index'])->name('expenses.index');
+    Route::get('/expenses', [ExpenseController::class, 'index'])->name('expenses.index');
     Route::get('/expenses/create', [ExpenseController::class, 'create'])->name('expenses.create');
     Route::post('/expenses/store', [ExpenseController::class, 'store'])->name('expenses.store');
     Route::get('/expenses/report', [ExpenseController::class, 'report'])->name('expenses.report');
+    Route::get('/expensesg/export', [ExpenseController::class, 'export'])->name('expenses.printExpensesExcel');
+    Route::get('expenses/{expense}', [ExpenseController::class, 'show'])->name('expenses.show');
 
 
-    Route::get('/damaged/index', [DamagedItemController::class, 'index'])->name('damaged.index');
+
+
+    Route::get('/damaged', [DamagedItemController::class, 'index'])->name('damaged.index');
     Route::get('/damaged/create', [DamagedItemController::class, 'create'])->name('damaged.create');
     Route::post('/damaged/store', [DamagedItemController::class, 'store'])->name('damaged.store');
+    Route::get('/damaged/export', [DamagedItemController::class, 'export'])->name('damaged.printDamagedExcel');
+    Route::delete('/damaged/{damagedItem}',[DamagedItemController::class,'destroy'])->name('damaged.destroy');
+    Route::get('damaged/{damagedItemId}',[DamagedItemController::class,'show'])->name('damaged.show');
+    Route::get('/damaged/{damagedItem}/edit',[DamagedItemController::class,'edit'])->name('damaged.edit');
+    Route::put('/damaged/{damagedItem}',[DamagedItemController::class,'update'])->name('damaged.update');
+
+
+    // صفحة الدفع لزبون معين وفاتورة محددة
+    Route::get('/pos/pay/{pos_bill}', [PosBillController::class, 'showPaymentPage'])->name('pos.paymentPage');
+    // معالجة الدفع
+    Route::post('/pos/pay/{pos_bill}', [PosBillController::class, 'processPayment'])->name('pos.paymentProcess');
+
+    Route::get('salesReturns',[SalesReturnController::class,'index'])->name('salesReturn.index');
+    Route::get('salesReturns/create',[SalesReturnController::class,'create'])->name('salesReturn.create');
+    Route::post('salesReturns/store',[SalesReturnController::class,'store'])->name('salesReturn.store');
+    Route::get('salesReturns/{billNumber}/details', [SalesReturnController::class, 'getBillDetails'])->name('salesReturns.details');
+    Route::get('/salesReturns/export', [SalesReturnController::class, 'export'])->name('salesReturns.printSalesReturnsExcel');
+    Route::get('salesReturns/{id}',[SalesReturnController::class,'show'])->name('salesReturns.show');
+
+
+    Route::post('/force/ogout', [LogoutController::class, 'forceLogout'])->name('force.logout');
+
+    // Route::get('/farmacy/report', [FarmacyController::class, 'report'])->name('farmacy.report');
+
+    // صفحة الفلتر
+    Route::get('/reports/profitLoss/filter', [ReportController::class, 'profitLossFilter'])->name('reports.profitLossFilter');
+    // صفحة التقرير
+    Route::get('/reports/profitLoss', [ReportController::class, 'profitLoss'])->name('reports.profitLoss');
 
     });
 

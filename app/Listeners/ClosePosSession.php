@@ -44,7 +44,7 @@ class ClosePosSession
                 ->sum('net_amount');
 
             // الرصيد الختامي = رصيد افتتاحي + amount + net_amount
-            $closingBalance = $openingBalance + $totalAmount + $totalNetAmount;
+            $closingBalance = $openingBalance + $totalNetAmount;
 
             // تحديث الجلسة
             $session->update([

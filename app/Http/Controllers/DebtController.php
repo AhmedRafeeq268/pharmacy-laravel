@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\DebtsExport;
 use App\Models\Debt;
 use App\Models\customer;
 use App\Models\PosSession;
@@ -10,15 +11,77 @@ use Illuminate\Http\Request;
 use App\Models\CashBoxTransaction;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Maatwebsite\Excel\Facades\Excel;
+use PhpOffice\PhpSpreadsheet\Calculation\MathTrig\Sum;
 
 class DebtController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    // public function index(Request $request)
+    // {
+    //     $search = $request->input('search');
+    //     $debts = Debt::with(['customer','posBill','payments'])->when($search, function ($query, $search) {
+    //         $query->where('pos_bill_id', 'like', "%{$search}%")
+    //         ->orWhereHas('customer', fn($q) => $q->where('name', 'like', "%$search%"));
+    //     })->where('status','open')->paginate(8); // حدد عدد العناصر في كل صفحة
+
+    //     // إذا كان الطلب AJAX نعيد جزء الـ Table فقط
+    //     if ($request->ajax()) {
+    //         return view('debts._table', compact('debts'))->render();
+    //     }
+
+    //     // أما إذا كان تحميل الصفحة عادي
+    //     return view('debts.index', compact('debts'));
+    // }
+
+    public function index(Request $request)
     {
-        //
+        $search = $request->input('search');
+
+        $debtsQuery = Debt::select('customer_id', DB::raw('SUM(remaining_amount) as total_remaining'),DB::raw('SUM(total_amount) as total_debt'))
+            ->with('customer') // لتحميل بيانات الزبون
+            ->where('status', 'open')
+            ->groupBy('customer_id');
+
+        $total_debts = Debt::where('status', 'open')->sum('remaining_amount');
+
+        // بحث حسب اسم الزبون
+        if ($search) {
+            $debtsQuery->whereHas('customer', function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%");
+            });
+        }
+
+        $debts = $debtsQuery->paginate(8); // عدد الزبائن في الصفحة
+
+        // في حالة AJAX
+        if ($request->ajax()) {
+            return view('debts._table', compact('debts','total_debts'))->render();
+        }
+
+        // تحميل عادي
+        return view('debts.index', compact('debts','total_debts'));
+    }
+
+    public function export(Request $request)
+    {
+        $search = $request->input('search');
+
+         $debtsQuery = Debt::select('customer_id', DB::raw('SUM(remaining_amount) as total_remaining'),DB::raw('SUM(total_amount) as total_debt'))
+            ->with('customer') // لتحميل بيانات الزبون
+            ->where('status', 'open')
+            ->groupBy('customer_id');
+
+        $total_debts = Debt::where('status', 'open')->sum('remaining_amount');
+        $debts = $debtsQuery->get();
+
+        if ($debts->isEmpty()) {
+            return redirect()->back()->with('error', 'لا توجد بيانات لتصديرها.');
+        }
+
+        return Excel::download(new DebtsExport($search), 'depts.xlsx');
     }
 
     /**
@@ -40,10 +103,39 @@ class DebtController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Debt $debt)
+    // public function show($customer_id)
+    // {
+    //      $customer = Customer::findOrFail($customer_id);
+
+    //     // جلب كل الديون المفتوحة الخاصة بالزبون
+    //     $debts = Debt::with(['posBill', 'payments'])
+    //         ->where('customer_id', $customer_id)
+    //         ->where('status', 'open')
+    //         ->get();
+
+    //     return view('debts.customer_details', compact('customer', 'debts'));
+    // }
+
+    public function show( $customer_id)
     {
-        //
+        $customer = Customer::findOrFail($customer_id);
+
+        // جلب الديون المفتوحة مع الفواتير والمنتجات
+        $debts = Debt::with([
+            'posBill.details.product', // لجلب المنتجات في كل فاتورة
+            'payments'
+        ])
+        ->where('customer_id', $customer_id)
+        ->where('status', 'open')
+        ->get();
+
+         $total_remaining = $debts->sum(function ($debt) {
+            return $debt->remaining_amount;
+        });
+
+        return view('debts.customer_details', compact('customer', 'debts','total_remaining','total_remaining'));
     }
+
 
     /**
      * Show the form for editing the specified resource.
@@ -64,10 +156,17 @@ class DebtController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Debt $debt)
-    {
-        //
-    }
+    public function destroy($debt){
+            $debt = Debt::find($debt);
+            if (!$debt)
+            {
+                return redirect()->back()->with('error', __('messages.not_found'));
+            }
+            $debt->delete();
+            $page = request()->get('page', 1);
+            return to_route('debts.index',['page' => $page])
+            ->with('success', __('messages.deleted'));
+        }
 
     public function searchForm()
     {
@@ -75,7 +174,7 @@ class DebtController extends Controller
         return view('debts.search',compact('customers'));
     }
 
-   public function ajaxDebts($customerId)
+    public function ajaxDebts($customerId)
     {
         $debts = Debt::where('customer_id', $customerId)
                     ->where('is_paid', false)

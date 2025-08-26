@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use Stripe\Charge;
+use Stripe\Stripe;
 use App\Models\Debt;
 use App\Models\PosBill;
 use App\Models\Product;
@@ -14,6 +16,8 @@ use App\Models\CashBoxTransaction;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;
+use Stripe\Exception\ApiErrorException;
+use App\Models\CashBoxTransactionSecond;
 
 class PosBillController extends Controller
 {
@@ -61,40 +65,28 @@ class PosBillController extends Controller
         return Excel::download(new PosBillsExport($search), 'posBills.xlsx');
     }
 
-    // public function create(Request $request, $pos_bill_id = null)
-    // {
-    //     $customers  = customer::all();
-    //     if (!$pos_bill_id) {
-    //         return view('pos.create', [
-    //             'pos_bill_id' => null,
-    //             'posBillsDetails' => collect(),
-    //         ]);
-    //     }
-
-    //     $posBillsDetails = PosBillDetails::where('pos_bill_id', $pos_bill_id)->get();
-    //     return view('pos.create',compact('customers','pos_bill_id','posBillsDetails'));
-    // }
-
     public function create(Request $request, $pos_bill_id = null)
-{
-    $customers = customer::all(); // <-- اجلب العملاء دائماً
+    {
+        $customers = customer::all(); // <-- اجلب العملاء دائماً
 
-    if (!$pos_bill_id) {
-        return view('pos.create', [
-            'pos_bill_id'       => null,
-            'posBillsDetails'   => collect(),
-            'customers'         => $customers, // <-- تمرير العملاء هنا
-        ]);
+        $currentSession = PosSession::where('user_id', Auth::id())
+        ->where('status', 'open')
+        ->latest()
+        ->first();
+
+        $posBillsDetails = PosBillDetails::where('pos_bill_id', $pos_bill_id)->get();
+
+        if (!$pos_bill_id) {
+            return view('pos.create', [
+                'pos_bill_id'       => null,
+                'posBillsDetails'   => collect(),
+                'customers'         => $customers, // <-- تمرير العملاء هنا
+                'currentSession'    => $currentSession,
+            ]);
+        }
+
+        return view('pos.create',compact('customers','pos_bill_id','posBillsDetails','currentSession') );
     }
-
-    $posBillsDetails = PosBillDetails::where('pos_bill_id', $pos_bill_id)->get();
-
-    return view('pos.create', [
-        'customers'       => $customers,
-        'pos_bill_id'     => $pos_bill_id,
-        'posBillsDetails' => $posBillsDetails,
-    ]);
-}
 
 
     public function store(Request $request, $pos_bill_id = null)
@@ -133,15 +125,19 @@ class PosBillController extends Controller
             $pos_bill_id = $posBill->id;
         }
 
-        $unit_price = $product->unit_price;
+        $unit_price = $product->price_sell;
         $price      = $unit_price * $quantity;
 
+        $costPrice = $product->unit_price;
+        $profit = ($unit_price - $costPrice) * $quantity;
         PosBillDetails::create([
             'pos_bill_id' => $pos_bill_id,
             'product_id'  => $product->id,
             'unit_price'  => $unit_price,
             'quantity'    => $quantity,
             'price'       => $price,
+            'cost_price'   => $costPrice,
+            'profit'       => $profit,
         ]);
 
         $total_amount = PosBillDetails::where('pos_bill_id', $pos_bill_id)->sum('price');
@@ -169,7 +165,7 @@ class PosBillController extends Controller
                 'success' => true,
                 'product' => [
                     'name'       => $product->name,
-                    'unit_price' => $product->unit_price,
+                    'price_sell' => $product->price_sell,
                 ],
             ]);
         }
@@ -247,32 +243,138 @@ class PosBillController extends Controller
 
     public function closeCashbox(Request $request)
     {
-        $employeeId = $request->employee_id;
+        $session = PosSession::where('user_id', Auth::id())
+            ->where('status', 'open')
+            ->first();
+        if ($session) {
+            // الرصيد الافتتاحي
+            $openingBalance = $session->opening_balance;
+            // مجموع net_amount لنفس الجلسة
+            $totalNetAmount = PosBill::where('session_id', $session->id)
+                ->sum('net_amount');
 
-        $nets_amount = PosBill::where('employee_id', $employeeId)
-                            ->where('is_closed_with_cashbox', 0)
-                            ->sum('net_amount');
+            // الرصيد الختامي = رصيد افتتاحي + amount + net_amount
+            $closingBalance = $openingBalance + $totalNetAmount;
 
-        $received_amount = CashBoxTransaction::latest()->value('delivered_amount') ?? 0;
+            $employeeId = $request->employee_id;
 
-        $delivered_amount = $received_amount + $nets_amount;
+            // $nets_amount = PosBill::where('employee_id', $employeeId)
+            // ->where('is_closed_with_cashbox', 0)
+            // ->sum('net_amount');
 
-        PosBill::where('employee_id', $employeeId)
-            ->where('is_closed_with_cashbox', 0)
-            ->update(['is_closed_with_cashbox' => 1]);
+            $received_amount = $openingBalance;
 
-        CashBoxTransaction::create([
-            'employee_id'      => $employeeId,
-            'received_amount'  => $received_amount,
-            'delivered_amount' => $delivered_amount,
+            $delivered_amount = $closingBalance;
+
+            // PosBill::where('employee_id', $employeeId)
+            // ->where('is_closed_with_cashbox', 0)
+            // ->update(['is_closed_with_cashbox' => 1]);
+
+            $cashbox = CashBoxTransactionSecond::create([
+                'employee_id'      => Auth::id(),
+                'received_amount'  => $received_amount,
+                'delivered_amount' => $delivered_amount,
+            ]);
+        }
+
+
+        return response()->json([
+        'success' => true,
+        'cashbox_id' => $cashbox->id,  // <--- هنا ID من الداتا بيز
+        'message' => __('messages.pos.cashbox_closed_successfully')
         ]);
 
-        return redirect()->back()->with('success', __('messages.pos.cashbox_closed_successfully'));
+        // return redirect()->back()->with('success', __('messages.pos.cashbox_closed_successfully'));
     }
 
     public function print($id)
     {
         $posBill = PosBill::with('details.product', 'employee')->findOrFail($id);
-        return view('pos.print', compact('posBill'));
+        return view('pos.printPay', compact('posBill'));
     }
+
+        public function cashboxReport($sessionId)
+    {
+        $session = PosSession::findOrFail($sessionId);
+
+        $opening_balance = $session->opening_balance;
+        $closing_balance = $session->closing_balance;
+        $casherName = $session->user->name;
+        $opened_at = $session->opened_at;
+        $closed_at = $session->closed_at;
+        $closingId = $sessionId;
+
+        $totalPayments = CashBoxTransaction::where('session_id', $sessionId)
+                            ->where('type', 'in')
+                            ->sum('amount');
+        $totalReturns = CashBoxTransaction::where('session_id', $sessionId)
+                            ->where('type', 'refund')
+                            ->sum('amount');
+        $totalDescounts = PosBill::where('session_id', $sessionId)->sum('discount');
+        $totalAmounts = PosBill::where('session_id', $sessionId)->sum('total_amount');
+        $netAmounts = PosBill::where('session_id', $sessionId)->sum('net_amount');
+        $payDebt = PosBill::where('session_id', $sessionId)->where('payment_status','debt')->sum('net_amount');
+        $payVisa = PosBill::where('session_id', $sessionId)->where('payment_status','visa')->sum('net_amount');
+        $payCash = PosBill::where('session_id', $sessionId)->where('payment_status','cash')->sum('net_amount');
+
+        return view('pos.printCashBox',compact('opening_balance','closing_balance','casherName','opened_at','closed_at','closingId','totalPayments','totalReturns','totalDescounts','totalAmounts','netAmounts','payDebt','payVisa','payCash',));
+
+
+    }
+
+
+
+
+    public function showPaymentPage($pos_bill_id)
+    {
+        $bill = PosBill::findOrFail($pos_bill_id);
+        return view('pos.payment', compact('bill'));  // أنشئ هذه الصفحة
+    }
+
+
+    public function processPayment(Request $request, $pos_bill_id)
+    {
+        $bill = PosBill::findOrFail($pos_bill_id);
+
+        $request->validate([
+            'stripeToken' => 'required|string',
+        ]);
+
+        try {
+            Stripe::setApiKey(env('STRIPE_SECRET'));
+
+            // تنفيذ الدفع عبر Stripe
+            $charge = Charge::create([
+                'amount' => intval($bill->net_amount * 100), // Stripe يستخدم السنتات
+                'currency' => 'usd',
+                'description' => 'POS Payment for Bill #' . $bill->id,
+                'source' => $request->stripeToken,
+            ]);
+
+            // تحديث حالة الفاتورة
+            $bill->update([
+                'paid'            => true,
+                'payment_status'  => 'visa',
+                'status'          => 'finished',
+                'finished_by'     => Auth::id(),
+            ]);
+
+            // تسجيل الحركة المالية في الصندوق
+            CashBoxTransaction::create([
+                'amount'      => $bill->net_amount,
+                'type'        => 'in',
+                'description' => __('messages.pos.payment_visa') . ' - فاتورة #' . $bill->id,
+                'pos_bill_id' => $bill->id,
+                'session_id'  => $bill->session_id,
+            ]);
+
+            return redirect()->route('pos.index')->with('success', 'تم الدفع بالفيزا بنجاح');
+
+        } catch (ApiErrorException $e) {
+            return back()->with('error', 'فشل الدفع: ' . $e->getMessage());
+        }
+    }
+
+
+
 }

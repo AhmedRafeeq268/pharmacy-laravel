@@ -13,18 +13,28 @@
             </h1>
 
             {{-- زر إغلاق الصندوق --}}
-            <div class="row mt-4">
+            {{-- <div class="row mt-4">
                 <div class="col-auto">
                     <form method="POST" action="{{ route('pos.closeCashbox') }}" onsubmit="return confirm('{{ __('messages.pos.confirm_close_cashbox') }}')">
                         @csrf
-                        <input type="hidden" name="employee_id" value="5">
+                        <input type="hidden" name="employee_id" value="{{ Auth::id() }}">
                         <button type="submit" class="btn btn-danger d-flex align-items-center gap-2">
                             <i class="bi bi-lock-fill"></i>
                             @lang('messages.pos.close_cashbox')
                         </button>
                     </form>
                 </div>
+            </div> --}}
+            <input type="hidden" name="session_id" value="{{ $currentSession->id }}">
+
+            <div class="col-auto">
+                <button type="button" class="btn btn-danger d-flex align-items-center gap-2" onclick="handleCloseCashbox({{ $currentSession->id }})">
+                    <i class="bi bi-lock-fill"></i>
+                    @lang('messages.pos.close_cashbox')
+                </button>
             </div>
+            {{-- @dd($currentSession) --}}
+            <input type="hidden" name="session_id" value="{{ $currentSession->id }}">
 
             <div class="form">
                 <form method="POST" action="{{ route('pos.store', ['pos_bill_id' => $pos_bill_id]) }}">
@@ -44,8 +54,8 @@
                         </div>
 
                         <div class="col-md-3">
-                            <label class="mb-2">@lang('messages.pos.unit_price')</label>
-                            <input type="number" class="form-control" id="unit_price" name="unit_price" placeholder="{{ __('messages.pos.unit_price') }}" disabled>
+                            <label class="mb-2">@lang('messages.product.price_sell')</label>
+                            <input type="number" class="form-control" id="price_sell" name="price_sell" placeholder="{{ __('messages.product.price_sell') }}" disabled>
                         </div>
 
                         <div class="col-md-3">
@@ -145,157 +155,205 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
 @push('scripts')
 <script>
-// تعريف دالة submitFinishForm عالمياً حتى تُعرف قبل استدعائها من الـ HTML
-window.submitFinishForm = function(paymentType) {
-    const discountInput = document.getElementById('discount');
-    const discountValue = discountInput ? discountInput.value || 0 : 0;
+    const posBillId = @json($pos_bill_id);
 
+    // إنهاء الفاتورة
+    // إنهاء الفاتورة
+window.submitFinishForm = function(paymentType) {
+    const discountValue = document.getElementById('discount')?.value || 0;
     const debtModalEl = document.getElementById('debtModal');
     const debtModal = new bootstrap.Modal(debtModalEl);
+
+    let confirmMessage = '';
+    if (paymentType === 'cash') {
+        confirmMessage = "هل أنت متأكد من الدفع نقداً؟";
+    } else if (paymentType === 'visa') {
+        confirmMessage = "هل أنت متأكد من الدفع بالبطاقة (فيزا)؟";
+    } else if (paymentType === 'debt') {
+        confirmMessage = "هل تريد تسجيل الفاتورة كدين على الزبون؟";
+    } else {
+        confirmMessage = "هل تريد فقط إنهاء الإدخال بدون دفع؟";
+    }
+
+    if (!confirm(confirmMessage)) {
+        return; // إذا اختار إلغاء، ما يرسل الطلب
+    }
 
     if (paymentType === 'debt') {
         debtModal.show();
         return;
     }
-
     if (paymentType === 'cash') {
         sendFinishRequest({ discount: discountValue, payment_status: 'cash' });
         return;
     }
-
     if (paymentType === 'visa') {
-        alert('ميزة الدفع بالفيزا سيتم تنفيذها لاحقاً');
+        sendFinishRequest({ discount: discountValue, payment_status: 'visa' });
         return;
     }
+    // مجرد إنهاء إدخال
+    sendFinishRequest({ discount: discountValue, payment_status: 'pending' });
 };
 
-// دالة لإرسال بيانات الفاتورة لإنهاء العملية
-function sendFinishRequest(payload) {
-    const url = "{{ route('pos.finish', ['pos_bill_id' => $pos_bill_id ?: 0]) }}";
 
-    fetch(url, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-            'Accept': 'application/json'
-        },
-        body: JSON.stringify(payload)
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (!data.success) {
-            alert(data.message || 'حدث خطأ أثناء حفظ الفاتورة.');
-            return;
+    // إرسال الطلب
+    function sendFinishRequest(payload) {
+        const url = "{{ route('pos.finish', ['pos_bill_id' => $pos_bill_id ?: 0]) }}";
+
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (!data.success) {
+                alert(data.message || 'حدث خطأ أثناء حفظ الفاتورة.');
+                return;
+            }
+            if (confirm('هل تريد طباعة الفاتورة؟')) {
+                window.open(`/pos/print/${data.bill_id}`, '_blank');
+                setTimeout(() => window.location.href = "{{ route('pos.create') }}", 1500);
+            } else {
+                window.location.href = "{{ route('pos.create') }}";
+            }
+        })
+        .catch(e => {
+            console.error(e);
+            alert('حدث خطأ في الحفظ، الرجاء المحاولة لاحقاً.');
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const barcodeInput     = document.getElementById('barcode');
+        const productNameInput = document.getElementById('product_name');
+        const PriceSellInput   = document.getElementById('price_sell');
+        const quantityInput    = document.getElementById('quantity');
+        const totalAmountInput = document.getElementById('total_amount');
+        const discountInput    = document.getElementById('discount');
+        const netAmountInput   = document.getElementById('net_amount');
+
+        barcodeInput.focus();
+
+        let timer;
+        barcodeInput.addEventListener('input', () => {
+            clearTimeout(timer);
+            timer = setTimeout(fetchProduct, 600);
+        });
+
+        function fetchProduct() {
+            const code = barcodeInput.value.trim();
+            if (!code) return resetFields();
+            fetch(`/pos/fetchProduct/${code}`)
+                .then(r => r.json())
+                .then(({success, product, message}) => {
+                    if (!success) return resetFields(() => alert(message));
+                    productNameInput.value = product.name;
+                    PriceSellInput.value   = product.price_sell;
+                    quantityInput.value    = 1;
+                    updateTotals();
+                    quantityInput.focus();
+                })
+                .catch(console.error);
         }
 
-        if (confirm('هل تريد طباعة الفاتورة؟')) {
-            window.open(`/pos/print/${data.bill_id}`, '_blank');
-            setTimeout(() => {
-                window.location.href = "{{ route('pos.index') }}";
-            }, 1500);
-        } else {
-            window.location.href = "{{ route('pos.create') }}";
+        quantityInput.addEventListener('input', updateTotals);
+        discountInput.addEventListener('input', updateTotals);
+
+        function updateTotals() {
+            const price    = parseFloat(PriceSellInput.value)   || 0;
+            const qty      = parseInt(quantityInput.value)      || 0;
+            const discount = parseFloat(discountInput.value)    || 0;
+
+            const total = price * qty;
+            totalAmountInput.value = total.toFixed(2);
+            netAmountInput.value   = Math.max(total - discount, 0).toFixed(2);
         }
-    })
-    .catch(error => {
-        console.error('خطأ في الحفظ:', error);
-        alert('حدث خطأ في الحفظ، الرجاء المحاولة لاحقاً.');
+
+        function resetFields(cb) {
+            productNameInput.value = '';
+            PriceSellInput.value   = '';
+            quantityInput.value    = '';
+            totalAmountInput.value = '';
+            netAmountInput.value   = '';
+            barcodeInput.value     = '';
+            if (cb) cb();
+        }
+
+        // التحكم بالكميات عبر لوحة المفاتيح
+        document.addEventListener('keydown', e => {
+            if (!quantityInput) return;
+            if (e.key === '+' || e.code === 'NumpadAdd') {
+                quantityInput.value = (parseInt(quantityInput.value) || 1) + 1;
+            } else if (e.key === '-' || e.code === 'NumpadSubtract') {
+                let qty = parseInt(quantityInput.value) || 1;
+                if (qty > 1) quantityInput.value = qty - 1;
+            } else return;
+            quantityInput.dispatchEvent(new Event('input'));
+            e.preventDefault();
+        });
+
+        // مودال الدين
+        const debtForm = document.getElementById('debtForm');
+        const debtModalEl = document.getElementById('debtModal');
+        const debtModal = new bootstrap.Modal(debtModalEl);
+
+        debtForm.addEventListener('submit', e => {
+            e.preventDefault();
+            const customerId = debtForm.customer_id.value;
+            if (!customerId) {
+                alert('يرجى اختيار الزبون');
+                return;
+            }
+            const discountValue = discountInput.value || 0;
+            sendFinishRequest({ discount: discountValue, payment_status: 'debt', customer_id: customerId });
+            debtModal.hide();
+        });
     });
-}
+        // سؤال الطباعة
 
-document.addEventListener('DOMContentLoaded', () => {
-    const barcodeInput     = document.getElementById('barcode');
-    const productNameInput = document.getElementById('product_name');
-    const unitPriceInput   = document.getElementById('unit_price');
-    const quantityInput    = document.getElementById('quantity');
-    const totalAmountInput = document.getElementById('total_amount');
-    const discountInput    = document.getElementById('discount');
-    const netAmountInput   = document.getElementById('net_amount');
+        function handleCloseCashbox(employeeId) {
+            const closeCashboxUrl = "{{ route('pos.closeCashbox') }}";
+            const printUrl = `/pos/cashboxReport/${employeeId}`;
+            const redirectUrl = "{{ route('pos.index') }}";
 
-    barcodeInput.focus();
+            if (!confirm("هل أنت متأكد أنك تريد إغلاق الصندوق؟")) {
+                return;
+            }
 
-    let timer;
-    barcodeInput.addEventListener('input', () => {
-        clearTimeout(timer);
-        timer = setTimeout(fetchProduct, 1000);
-    });
-
-    function fetchProduct() {
-        const code = barcodeInput.value.trim();
-        if (!code) {
-            resetFields();
-            return;
-        }
-
-        fetch(`/pos/fetchProduct/${code}`)
-            .then(r => r.json())
-            .then(({success, product, message}) => {
-                if (!success) return resetFields(() => alert(message));
-                productNameInput.value = product.name;
-                unitPriceInput.value   = product.unit_price;
-                quantityInput.value    = 1;
-                quantityInput.focus();
-                updateTotals();
+            fetch(closeCashboxUrl, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ employee_id: employeeId })
             })
-            .catch(console.error);
-    }
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => { throw new Error(text) });
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log(data); // debug
 
-    quantityInput.addEventListener('input', updateTotals);
-    discountInput.addEventListener('input', updateTotals);
-
-    function updateTotals() {
-        const discount = parseFloat(discountInput.value) || 0;
-        const total    = parseFloat(totalAmountInput.value) || 0;
-        const net      = total - discount;
-        netAmountInput.value = (net > 0 ? net : 0).toFixed(2);
-    }
-
-    function resetFields(cb) {
-        productNameInput.value = '';
-        unitPriceInput.value   = '';
-        quantityInput.value    = '';
-        barcodeInput.value     = '';
-        if (typeof cb === 'function') cb();
-    }
-
-    document.addEventListener('keydown', e => {
-        if (!quantityInput) return;
-        const keys = ['+', '=', '-', 'NumpadAdd', 'NumpadSubtract'];
-        if (!keys.includes(e.key) && !keys.includes(e.code)) return;
-
-        let qty = parseInt(quantityInput.value) || 1;
-        if ((e.key === '+' || e.key === '=' || e.code === 'NumpadAdd')) {
-            quantityInput.value = qty + 1;
-        } else if ((e.key === '-' || e.code === 'NumpadSubtract') && qty > 1) {
-            quantityInput.value = qty - 1;
+                if (confirm("هل تريد طباعة التقرير؟")) {
+                    window.open(printUrl, '_blank');
+                }
+                window.location.href = redirectUrl;
+            })
+            .catch(error => {
+                alert("خطأ: " + error.message);
+            });
         }
 
-        quantityInput.dispatchEvent(new Event('input'));
-        e.preventDefault();
-    });
 
-    // مودال اختيار الزبون عند الدفع بالدين
-    const debtModalEl = document.getElementById('debtModal');
-    const debtModal = new bootstrap.Modal(debtModalEl);
-    const debtForm = document.getElementById('debtForm');
 
-    debtForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-
-        const customerId = debtForm.customer_id.value;
-        if (!customerId) {
-            alert('يرجى اختيار الزبون');
-            return;
-        }
-
-        const discountValue = discountInput.value || 0;
-        sendFinishRequest({ discount: discountValue, payment_status: 'debt', customer_id: customerId });
-        debtModal.hide();
-    });
-});
 </script>
+
 @endpush
-
-
-

@@ -26,6 +26,10 @@ return [
         'purchaseReturns' => 'مرتجعات الموردين',
         'expenses' => 'المصاريف',
         'damagedProducts' => 'المنتجات التالفة',
+        'debts' => 'الديون',
+        'posReturns' => 'مرتجعات الزبائن',
+        'expenses' => 'النفقات',
+
 
     ],
 
@@ -163,7 +167,7 @@ return [
         'price_sell'=>'سعر البيع',
         'barcode' => 'رقم المنتج',
         'export_products_excel' => 'طباعة بيانات المنتجات اكسل',
-
+        'quantity'=> 'الكمية',
 
     ],
 
@@ -335,6 +339,10 @@ return [
         'date' => 'التاريخ',
         'type' => 'النوع',
         'total' => 'المجموع',
+        'search_expense' => 'ابحث باستخدام النوع او الوصف او القيمة او تاريخ الصرف',
+        'export_expenses_excel' => 'تصدير المصروفات إلى Excel',
+        'created_by'          => 'تم الإنشاء بواسطة',
+
     ],
 
     'damaged' =>[
@@ -345,6 +353,134 @@ return [
         'damaged_quantity' => 'الكمية التالفة',
         'damage_reason' => 'سبب التلف',
         'save_damaged_item' => 'تسجيل تالف',
+        'search_damaged' => 'ابحث باستخدام اسم المنتج والكمية',
+        'export_damaged_excel' => 'تصدير التالف إلى Excel',
+        'prodact_name'=>'اسم المنتج',
+        'reported_by' => 'تم الإبلاغ بواسطة',
+        'add_new_damaged_items' => 'إضافة أصناف تالفة جديدة',
+        'edit_damage_item' => 'تعديل عنصر تالف',
+        'not_enough_stock' => 'الكمية المطلوبة غير متوفرة في المخزون',
+
+    ],
+
+
+    'debts' =>[
+        'page_title'         => 'بحث عن ديون زبون',
+        'select_customer'    => 'اختر الزبون',
+        'select_customer_option' => '-- اختر الزبون --',
+        'loading'            => '...جاري التحميل',
+        'total_debt'         => 'إجمالي الديون',
+        'payment_amount'     => 'مبلغ الدفع',
+        'pay'                => 'دفع',
+        'debt_details'       => 'تفاصيل الديون',
+        'debt_number'        => 'رقم الدين',
+        'total_amount'       => 'المبلغ الكلي',
+        'remaining_amount'   => 'المتبقي',
+        'products'           => 'المنتجات',
+        'quantity'           => 'الكمية',
+        'price'              => 'السعر',
+        'no_debts'           => 'لا يوجد ديون مفتوحة لهذا الزبون.',
+        'error_fetching'     => 'حدث خطأ أثناء جلب تفاصيل الدين.',
+        'alert'              => 'تنبيه',
+        'enter_customer_and_amount' => 'يرجى اختيار الزبون وإدخال مبلغ الدفع.',
+        'confirm_payment'    => 'تأكيد الدفع',
+        'confirm_payment_text' => 'هل تريد دفع مبلغ :amount؟',
+        'confirm_yes'        => 'نعم، ادفع',
+        'cancel'             => 'إلغاء',
+        'success'            => 'تم',
+        'payment_successful' => 'تم الدفع بنجاح.',
+        'payment_failed'     => 'فشل في الدفع.',
+        'error_during_payment' => 'حدث خطأ أثناء الدفع.',
+        'search_debt' => 'ابحث باستخدام اسم الزبون',
+        'export_debts_excel' => 'طباعة الديون اكسل',
+        'customer_name' => 'اسم الزبون',
+        'pos_bill_id' => 'رقم فاتورة البيع',
+        'status' => 'الحالة',
+        'is_paid' => 'مدفوع؟',
+        'bill_date'=>'تاريخ الفاتورة',
+        'customer_debt_details' => 'تفاصيل ديون الزبون',
+        'product_name' => 'اسم المنتج',
+        'total' => 'الإجمالي',
+        'no_debt' => 'لا توجد ديون لهذا الزبون.',
+        'total_remaining' => 'إجمالي المبلغ المتبقي',
+
+    ],
+
+    'payment' => [
+        'page_title'           => 'دفع فاتورة ',
+        'invoice_number'       => 'رقم الفاتورة',
+        'amount_due'           => 'المبلغ المطلوب',
+        'pay_now'              => 'دفع الآن',
+        'payment_error'        => 'حدث خطأ أثناء عملية الدفع.',
+        'card_error'           => 'خطأ في بطاقة الدفع: ',
+        'stripe_key_missing'   => 'مفتاح Stripe غير موجود.',
+        'payment_success'      => 'تمت عملية الدفع بنجاح.',
+        'loading'              => 'جاري المعالجة...',
+        'enter_card_details'   => 'يرجى إدخال بيانات البطاقة.',
+    ],
+
+    'salesReturn' =>[
+        'page_title' => 'مرتجع زبون',
+        'create_new_return' => 'إنشاء مرتجع جديد',
+        'enter_bill_number'      => 'أدخل رقم الفاتورة',
+        'show_bill_data'         => 'عرض بيانات الفاتورة',
+        'customer_name'             => 'اسم الزبون',
+        'original_bill_number'   => 'رقم الفاتورة الأصلية',
+        'return_method'             => 'طريقة الإرجاع',
+        'choose_method'             => 'اختر الطريقة',
+        'cash'                      => 'نقداً',
+        'add_to_customer_account'   => 'إضافة لحساب الزبون',
+        'returned_items_details'    => 'تفاصيل الأصناف المرتجعة',
+        'product'                   => 'الصنف',
+        'price'                     => 'السعر',
+        'purchased_quantity'        => 'الكمية المشتراة',
+        'previously_returned_qty'   => 'الكمية المرتجعة سابقاً',
+        'remaining_qty'             => 'المتبقي للإرجاع',
+        'qty_to_return'             => 'الكمية المراد إرجاعها',
+        'total'                     => 'المجموع',
+        'grand_total'               => 'المجموع الكلي:',
+        'save_return'               => 'حفظ المرتجع',
+        'enter_bill_alert'       => 'يرجى إدخال رقم الفاتورة',
+        'fetch_bill_failed'      => 'فشل في جلب بيانات الفاتورة',
+        'error_occurred'            => 'حدث خطأ',
+
+        'pos_bill_number'          => 'رقم فاتورة نقطة البيع',
+        'refund_method'      => 'طريقة الإرجاع',
+        'product_name'             => 'اسم المنتج',
+        'quantity'                 => 'الكمية',
+        'subtotal'                 => 'الإجمالي الفرعي',
+
+
+        'search_placeholder'     => 'ابحث باستخدام اسم الزبون او رقم الفاتورة او طريقة ارجاع النقود',
+        'export_excel'           => 'تصدير اكسل',
+        'add_new_return'         => 'اضافة مرتجع جديد',
+
+
+
+    ],
+
+    'reports' => [
+        'profit_loss_report' => 'تقرير الربح والخسارة',
+        'store_name' => 'اسم الصيدلية',
+        'from' => 'من تاريخ',
+        'to' => 'إلى تاريخ',
+        'total_sales' => 'إجمالي المبيعات',
+        'total_profit' => 'إجمالي الربح',
+        'expenses' => 'المصروفات',
+        'damaged' => 'المنتجات التالفة',
+        'net_profit' => 'صافي الربح',
+        'product_profit_detail' => 'تفاصيل ربح المنتجات',
+        'product' => 'المنتج',
+        'quantity_sold' => 'الكمية المباعة',
+        'total_product_profit' => 'إجمالي ربح المنتج',
+        'thanks' => 'شكراً لاستخدامكم نظامنا',
+        'print' => 'طباعة التقرير',
+        'confirmation' => 'تأكيد',
+        'print_question' => 'هل تريد طباعة التقرير؟',
+        'yes' => 'نعم',
+        'cancel' => 'إلغاء',
+        'unknown' => 'غير معروف',
+        'show_report' => 'عرض التقرير',
     ],
 
 
@@ -360,6 +496,8 @@ return [
      'back_to_list' => 'رجوع إلى القائمة',
      'employees' => 'الموظفين',
      'customers' => 'الزبائن',
+     'damage' => 'التوالف',
+     'debts' => 'الديون',
      'confirm_delete' => 'هل أنت متأكد أنك تريد الحذف؟',
      'no_results_found' => 'لا توجد بيانات لعرضها',
      'added' => 'تمت الإضافة بنجاح',
@@ -388,12 +526,16 @@ return [
      'supplier_details'     => 'بيانات المورد',
      'bill_details'     => 'بيانات الفاتورة',
      'purchaseReturns_details' => 'تفاصيل مرتجعات الموردين',
+     'damaged_details' => 'تفاصيل المنتجات التالفة',
+     'sales_return_details' => 'بيانات المرتجع',
 
     'back_to_list'       => 'العودة إلى القائمة',
     'edit'               => 'تعديل',
+    'no_data_to_export'      => 'لا توجد بيانات لتصديرها.',
 
     'yes'      =>'نعم',
     'no'       =>'لا',
+    'shekel'   =>'₪',
 
 
 ];

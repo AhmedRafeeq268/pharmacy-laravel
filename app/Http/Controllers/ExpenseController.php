@@ -6,11 +6,56 @@ use id;
 use App\Models\Expense;
 use App\Models\PosSession;
 use Illuminate\Http\Request;
+use App\Exports\ExpensesExport;
 use App\Models\CashBoxTransaction;
 use Illuminate\Support\Facades\Auth;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ExpenseController extends Controller
 {
+    public function index(Request $request)
+    {
+        $search = $request->input('search');
+
+        $expenses = Expense::with(['user'])
+            ->when($search, function ($query) use ($search) {
+                    $query->where('type', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%")
+                    ->orWhere('amount', 'like', "%{$search}%")
+                    ->orWhereHas('user', fn($q) => $q->where('name', 'like', "%$search%"));
+        })->orderBy('id', 'desc')->paginate(8);
+
+
+        // إذا كان الطلب AJAX نعيد جزء الـ Table فقط
+        if ($request->ajax()) {
+            return view('expenses._table', compact('expenses'))->render();
+        }
+
+        // أما إذا كان تحميل الصفحة عادي
+        return view('expenses.index', compact('expenses'));
+    }
+
+    public function export(Request $request)
+    {
+        $search = $request->input('search');
+
+         $expenses = Expense::with(['user'])
+            ->when($search, function ($query) use ($search) {
+                    $query->where('type', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%")
+                    ->orWhere('amount', 'like', "%{$search}%")
+                    ->orWhereHas('user', fn($q) => $q->where('name', 'like', "%$search%"));
+        })->orderBy('id', 'desc')->get();
+
+
+        if ($expenses->isEmpty()) {
+            return redirect()->back()->with('error', 'لا توجد بيانات لتصديرها.');
+        }
+
+        return Excel::download(new ExpensesExport($search), 'expenses.xlsx');
+    }
+
+
     public function create(){
         return view('expenses.create');
     }

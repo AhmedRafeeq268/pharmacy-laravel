@@ -182,15 +182,15 @@ class EmployeeController extends Controller
      * Remove the specified resource from storage.
      */
         public function destroy($employeeId){
-        $employee = Employee::find($employeeId);
-        if (!$employee)
-        {
-            return redirect()->back()->with('error', __('messages.not_found'));
+            $employee = Employee::find($employeeId);
+            if (!$employee)
+            {
+                return redirect()->back()->with('error', __('messages.not_found'));
+            }
+            $employee->delete();
+            $page = request()->get('page', 1);
+            return to_route('employee.index',['page' => $page])
+            ->with('success', __('messages.deleted'));
         }
-        $employee->delete();
-        $page = request()->get('page', 1);
-        return to_route('employee.index',['page' => $page])
-        ->with('success', __('messages.deleted'));
-    }
 
 }

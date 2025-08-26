@@ -10,4 +10,8 @@ class Expense extends Model
     protected $fillable =[
         'type','description','amount','expense_date','created_by'
     ];
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
 }

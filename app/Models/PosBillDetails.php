@@ -8,7 +8,7 @@ class PosBillDetails extends Model
 {
     protected $fillable =
     [
-        'pos_bill_id','product_id','unit_price','quantity','price'
+        'pos_bill_id','product_id','unit_price','quantity','price','cost_price','profit'
     ];
 
     public function product()
