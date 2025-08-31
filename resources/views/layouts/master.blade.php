@@ -261,7 +261,7 @@
 
                     <li>
                         <a href="#">
-                            <i class="bi bi-images me-2"></i>@lang('messages.master.photo_album')
+                            <i class="bi bi-images me-1"></i>@lang('messages.master.photo_album')
                         </a>
                         <ul class="drop_main_menu">
                             <li><a href="">@lang('messages.master.add_new ')</a></li>
@@ -270,13 +270,13 @@
                     </li>
                     <li>
                         <a href="{{ route('debts.index') }}">
-                            <i class="bi bi-receipt me-2"></i>@lang('messages.master.debts')
+                            <i class="bi bi-receipt me-1"></i>@lang('messages.master.debts')
                         </a>
 
                     </li>
                     <li>
                         <a href="#">
-                            <i class="bi me-2"></i>@lang('messages.master.expenses')
+                            <i class="bi bi-wallet me-1"></i>@lang('messages.master.expenses')
                         </a>
                         <ul class="drop_main_menu">
                             <li><a href="{{ route('expenses.create') }}">@lang('messages.master.add_new ')</a></li>

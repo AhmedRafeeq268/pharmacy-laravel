@@ -26,6 +26,7 @@ return [
         'purchaseReturns' => 'مرتجعات الموردين',
         'expenses' => 'المصاريف',
         'damagedProducts' => 'المنتجات التالفة',
+        'damaged' => 'التالف',
         'debts' => 'الديون',
         'posReturns' => 'مرتجعات الزبائن',
         'expenses' => 'النفقات',
