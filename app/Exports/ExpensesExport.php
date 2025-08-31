@@ -12,34 +12,25 @@ class ExpensesExport implements FromCollection , WithHeadings,ShouldAutoSize
     /**
     * @return \Illuminate\Support\Collection
     */
-    protected $search;
+    protected $expenses;
 
 
-    public function __construct($search = null)
+    public function __construct($expenses)
     {
-        $this->search = $search;
+        $this->expenses = $expenses;
     }
 
     public function collection()
     {
-        $query = Expense::with(['user']);
-
-        if (!empty($this->search)) {
-            $query->where('type', 'like', '%' . $this->search . '%')
-                ->orWhere('description', 'like', '%' . $this->search . '%')
-                ->orWhere('amount', 'like', '%' . $this->search . '%')
-                ->orWhereHas('user', fn($q) => $q->where('name', 'like', '%' . $this->search . '%'));
-        }
-
-        return $query->get()->map(function ($expense) {
+        return $this->expenses->map(function ($expense) {
             return [
-                'Id'                    => $expense->id,
-                'type'                  => $expense->type,
-                'description'           => $expense->description,
-                'amount'                => $expense->amount ?? 'غير محدد',
-                'expense_date'          => $expense->expense_date,
-                'created_by'            => $expense->user->name,
-                'Created At'            => $expense->created_at->format('Y-m-d'),
+                 $expense->id,
+                 $expense->type,
+                 $expense->description,
+                 $expense->amount ?? 'غير محدد',
+                 $expense->expense_date,
+                 $expense->user->name,
+                 $expense->created_at->format('Y-m-d'),
             ];
         });
     }

@@ -2,25 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use Mpdf\Mpdf;
 use App\Models\CodesTb;
 use App\Models\customer;
 use App\Models\Employee;
+use App\Models\BankAccount;
 use Illuminate\Http\Request;
 use App\Exports\EmployeesExport;
-use App\Models\BankAccount;
 use Maatwebsite\Excel\Facades\Excel;
 
 class EmployeeController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    // public function index()
-    // {
-    //     $employees = Employee::orderBy('id', 'desc')->paginate(8);
-    //     return view('employee.index',['employees'=>$employees]);
-    // }
-
     public function index(Request $request)
     {
         $search = $request->input('search');
@@ -54,7 +46,40 @@ class EmployeeController extends Controller
             return redirect()->back()->with('error', 'لا توجد بيانات لتصديرها.');
         }
 
-        return Excel::download(new employeesExport($search), 'employees.xlsx');
+        return Excel::download(new employeesExport($employees), 'employees.xlsx');
+    }
+
+    public function exportPDF(Request $request)
+    {
+        $search = $request->input('search');
+
+         $employeesItems = Employee::when($search, function ($query, $search) {
+            $query->where('name', 'like', "%{$search}%")
+            ->orWhere('id_card', 'like', "%{$search}%")
+            ->orWhere('phone', 'like', "%{$search}%");
+        })->get();
+
+        if ($employeesItems->isEmpty()) {
+            return redirect()->back()->with('error', 'لا توجد بيانات لتصديرها.');
+        }
+
+        // تحميل Blade كـ HTML
+        $html = view('employee.employeeItemsPDF', compact('employeesItems'))->render();
+
+        // إعداد mPDF
+        $mpdf = new Mpdf([
+            'mode' => 'utf-8',
+            'format' => 'A4',
+            'default_font' => app()->getLocale() == 'ar' ? 'Cairo' : 'dejavusans',
+            'directionality' => app()->getLocale() == 'ar' ? 'rtl' : 'ltr',
+        ]);
+
+        // كتابة HTML في PDF
+        $mpdf->WriteHTML($html);
+        $filename = app()->getLocale() == 'ar' ? 'تقرير الموظفين.pdf' : 'Employee_Report.pdf';
+
+        // تحميل PDF مباشرة
+        return $mpdf->Output($filename, 'D');
     }
 
     /**

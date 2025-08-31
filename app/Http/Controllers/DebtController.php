@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Exports\DebtsExport;
+use Mpdf\Mpdf;
 use App\Models\Debt;
 use App\Models\customer;
 use App\Models\PosSession;
 use App\Models\DebtPayment;
+use App\Exports\DebtsExport;
 use Illuminate\Http\Request;
 use App\Models\CashBoxTransaction;
 use Illuminate\Support\Facades\DB;
@@ -16,25 +17,6 @@ use PhpOffice\PhpSpreadsheet\Calculation\MathTrig\Sum;
 
 class DebtController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    // public function index(Request $request)
-    // {
-    //     $search = $request->input('search');
-    //     $debts = Debt::with(['customer','posBill','payments'])->when($search, function ($query, $search) {
-    //         $query->where('pos_bill_id', 'like', "%{$search}%")
-    //         ->orWhereHas('customer', fn($q) => $q->where('name', 'like', "%$search%"));
-    //     })->where('status','open')->paginate(8); // حدد عدد العناصر في كل صفحة
-
-    //     // إذا كان الطلب AJAX نعيد جزء الـ Table فقط
-    //     if ($request->ajax()) {
-    //         return view('debts._table', compact('debts'))->render();
-    //     }
-
-    //     // أما إذا كان تحميل الصفحة عادي
-    //     return view('debts.index', compact('debts'));
-    // }
 
     public function index(Request $request)
     {
@@ -69,19 +51,75 @@ class DebtController extends Controller
     {
         $search = $request->input('search');
 
-         $debtsQuery = Debt::select('customer_id', DB::raw('SUM(remaining_amount) as total_remaining'),DB::raw('SUM(total_amount) as total_debt'))
-            ->with('customer') // لتحميل بيانات الزبون
+        $debtsQuery = Debt::select(
+                'customer_id',
+                DB::raw('SUM(total_amount) as total_debt'),
+                DB::raw('SUM(remaining_amount) as total_remaining')
+            )
             ->where('status', 'open')
-            ->groupBy('customer_id');
+            ->groupBy('customer_id')
+            ->when($search, function ($query) use ($search) {
+                $query->whereHas('customer', function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%");
+                });
+            })
+            ->with('customer')
+            ->get();
 
-        $total_debts = Debt::where('status', 'open')->sum('remaining_amount');
-        $debts = $debtsQuery->get();
-
-        if ($debts->isEmpty()) {
+        if ($debtsQuery->isEmpty()) {
             return redirect()->back()->with('error', 'لا توجد بيانات لتصديرها.');
         }
 
-        return Excel::download(new DebtsExport($search), 'depts.xlsx');
+        // تمرير البيانات مباشرة إلى DebtsExport
+        return Excel::download(new DebtsExport($debtsQuery), 'debts.xlsx');
+    }
+
+     public function exportPDF(Request $request)
+    {
+        $search = $request->input('search');
+
+        $debts = Debt::select(
+        'customer_id',
+        DB::raw('SUM(remaining_amount) as total_remaining'),
+        DB::raw('SUM(total_amount) as total_debt'),
+        DB::raw('MAX(created_at) as created_at')
+    )
+    ->with('customer')
+    ->where('status', 'open')
+    ->when($search, function ($query) use ($search) {
+        $query->whereHas('customer', function ($q) use ($search) {
+            $q->where('name', 'like', "%{$search}%")
+              ->orWhere('phone', 'like', "%{$search}%")
+              ->orWhere('address', 'like', "%{$search}%");
+        });
+    })
+    ->groupBy('customer_id');
+
+
+        $total_debts = Debt::where('status', 'open')->sum('remaining_amount');
+        $debtsItems = $debts->get();
+
+        if ($debtsItems->isEmpty()) {
+            return redirect()->back()->with('error', 'لا توجد بيانات لتصديرها.');
+        }
+
+        // تحميل Blade كـ HTML
+        $html = view('debts.debtsItemsPDF', compact('debtsItems','total_debts'))->render();
+
+        // إعداد mPDF
+        $mpdf = new Mpdf([
+            'mode' => 'utf-8',
+            'format' => 'A4',
+            'default_font' => app()->getLocale() == 'ar' ? 'Cairo' : 'dejavusans',
+            'directionality' => app()->getLocale() == 'ar' ? 'rtl' : 'ltr',
+        ]);
+
+        // كتابة HTML في PDF
+        $mpdf->WriteHTML($html);
+        $filename = app()->getLocale() == 'ar' ? 'تقرير الديون.pdf' : 'Debts_Report.pdf';
+
+        // تحميل PDF مباشرة
+        return $mpdf->Output($filename, 'D');
     }
 
     /**

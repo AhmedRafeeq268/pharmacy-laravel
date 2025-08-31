@@ -9,31 +9,23 @@ use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 
 class DamagedItemsExport implements FromCollection ,WithHeadings, ShouldAutoSize
 {
-    protected $search;
+    protected $damagedItems;
 
-    public function __construct($search = null)
+    public function __construct($damagedItems)
     {
-        $this->search = $search;
+        $this->damagedItems = $damagedItems;
     }
 
     public function collection()
     {
-        $query = DamagedItem::with(['product']);
-        if (!empty($this->search)) {
-            $query->where('quantity', 'like', '%' . $this->search . '%')
-                  ->orWhereHas('product', function ($q) {
-                    $q->where('name', 'like', '%' . $this->search . '%');
-                });
-        }
-
-        return $query->get()->map(function ($damagedItem) {
+        return $this->damagedItems->map(function ($damagedItem) {
             return [
-                'Id'               => $damagedItem->id,
-                'Product Name'     => $damagedItem->product->name,
-                'Quantity'         => $damagedItem->quantity,
-                'Reason'           => $damagedItem->reason,
-                'Reported By'      => $damagedItem->user->name,
-                'Created At'       => $damagedItem->created_at->format('Y-m-d'),
+                 $damagedItem->id,
+                 $damagedItem->product->name,
+                 $damagedItem->quantity,
+                 $damagedItem->reason,
+                 $damagedItem->user->name,
+                 $damagedItem->created_at->format('Y-m-d'),
             ];
         });
     }

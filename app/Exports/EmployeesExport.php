@@ -8,31 +8,23 @@ use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 
 class EmployeesExport implements FromCollection, WithHeadings, ShouldAutoSize
 {
-    protected $search;
+    protected $employees;
 
-    public function __construct($search = null)
+    public function __construct($employees)
     {
-        $this->search = $search;
+        $this->employees = $employees;
     }
 
     public function collection()
     {
-        $query = Employee::select('id','name','phone','email','id_card','created_at');
-
-        if (!empty($this->search)) {
-            $query->where('name', 'like', '%' . $this->search . '%')
-                  ->orWhere('id_card', 'like','%' . $this->search . '%')
-                  ->orWhere('phone', 'like','%' . $this->search . '%');
-        }
-
-        return $query->get()->map(function ($employee) {
+        return $this->employees->map(function ($employee) {
             return [
-                'Id'               => $employee->id,
-                'Name'             => $employee->name,
-                'Phone'            => $employee->phone,
-                'Email'            => $employee->email,
-                'Id_card'          => $employee->id_card,
-                'Created At'       => $employee->created_at->format('Y-m-d'),
+                 $employee->id,
+                 $employee->name,
+                 $employee->phone,
+                 $employee->email,
+                 $employee->id_card,
+                 $employee->created_at->format('Y-m-d'),
             ];
         });
 

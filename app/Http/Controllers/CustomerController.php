@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use Mpdf\Mpdf;
 use App\Models\CodesTb;
-use App\Models\customer;
 
+use App\Models\customer;
 use Illuminate\Http\Request;
 use App\Exports\CustomersExport;
 use function Laravel\Prompts\select;
@@ -51,7 +52,40 @@ class customerController extends Controller
             return redirect()->back()->with('error', 'لا توجد بيانات لتصديرها.');
         }
 
-        return Excel::download(new CustomersExport($search), 'customers.xlsx');
+        return Excel::download(new CustomersExport($customers), 'customers.xlsx');
+    }
+
+    public function exportPDF(Request $request)
+    {
+        $search = $request->input('search');
+
+        $customersItems = Customer::when($search, function ($query, $search) {
+            $query->where('name', 'like', "%{$search}%")
+            ->orWhere('id_card', 'like', "%{$search}%")
+            ->orWhere('phone', 'like', "%{$search}%");
+        })->get();
+
+        if ($customersItems->isEmpty()) {
+            return redirect()->back()->with('error', 'لا توجد بيانات لتصديرها.');
+        }
+
+        // تحميل Blade كـ HTML
+        $html = view('customer.customerItemsPDF', compact('customersItems'))->render();
+
+        // إعداد mPDF
+        $mpdf = new Mpdf([
+            'mode' => 'utf-8',
+            'format' => 'A4',
+            'default_font' => app()->getLocale() == 'ar' ? 'Cairo' : 'dejavusans',
+            'directionality' => app()->getLocale() == 'ar' ? 'rtl' : 'ltr',
+        ]);
+
+        // كتابة HTML في PDF
+        $mpdf->WriteHTML($html);
+        $filename = app()->getLocale() == 'ar' ? 'تقرير الزبائن.pdf' : 'Customer_Report.pdf';
+
+        // تحميل PDF مباشرة
+        return $mpdf->Output($filename, 'D');
     }
 
     public function show($id){

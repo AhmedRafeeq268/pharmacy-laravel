@@ -26,7 +26,7 @@ use App\Http\Controllers\FarmacyController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PosBillController;
 use App\Http\Controllers\ProductController;
-use App\Http\Controllers\customerController;
+use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\Admin\UserController;
@@ -63,14 +63,16 @@ Route::get('/toggle-language', function () {
     return view('farmacy.add_new_customer');
     })->name('farmacy.addcustomer');
 
-    Route::get('/customer',[customerController::class,'index'])->name('customer.index');
-    Route::get('/customer/create',[customerController::class,'create'])->name('customer.create');
-    Route::post('/customer',[customerController::class,'store'])->name('customer.store');
-    Route::get('/customer/{customer}/edit',[customerController::class,'edit'])->name('customer.edit');
-    Route::put('/customer/{customer}',[customerController::class,'update'])->name('customer.update');
-    Route::delete('/customer/{customer}',[customerController::class,'destroy'])->name('customer.destroy');
-    Route::get('/customer/export', [CustomerController::class, 'export'])->name('customer.printCustomersExcel');
-    Route::get('customer/show{customer}',[customerController::class,'show'])->name('customer.show');
+    Route::get('/customer',[CustomerController::class,'index'])->name('customer.index');
+    Route::get('/customer/create',[CustomerController::class,'create'])->name('customer.create');
+    Route::post('/customer',[CustomerController::class,'store'])->name('customer.store');
+    Route::get('/customer/exportExcel', [CustomerController::class, 'export'])->name('customer.printCustomersExcel');
+    Route::get('/customer/exportPDF', [CustomerController::class, 'exportPDF'])->name('customer.printCustomerPdf');
+    Route::get('/customer/{customer}/edit',[CustomerController::class,'edit'])->name('customer.edit');
+    Route::put('/customer/{customer}',[CustomerController::class,'update'])->name('customer.update');
+    Route::delete('/customer/{customer}',[CustomerController::class,'destroy'])->name('customer.destroy');
+
+    Route::get('customer/show{customer}',[CustomerController::class,'show'])->name('customer.show');
 
 
     Route::get('/employee',[EmployeeController::class,'index'])->name('employee.index');
@@ -79,7 +81,9 @@ Route::get('/toggle-language', function () {
     Route::get('/employee/{employee}/edit',[EmployeeController::class,'edit'])->name('employee.edit');
     Route::put('/employee/{employee}',[EmployeeController::class,'update'])->name('employee.update');
     Route::delete('/employee/{employee}',[EmployeeController::class,'destroy'])->name('employee.destroy');
-    Route::get('/employee/export', [EmployeeController::class, 'export'])->name('employee.printEmployeesExcel');
+    Route::get('/employee/exportExcel', [EmployeeController::class, 'export'])->name('employee.printEmployeesExcel');
+    Route::get('/employee/exportPDF', [EmployeeController::class, 'exportPDF'])->name('employee.printEmployeePdf');
+
     Route::get('employee/{employee}', [EmployeeController::class, 'show'])->name('employee.show');
 
 
@@ -99,7 +103,8 @@ Route::get('/toggle-language', function () {
     Route::get('/supplier/{supplier}/edit',[SupplierController::class,'edit'])->name('supplier.edit');
     Route::put('/supplier/{supplier}',[SupplierController::class,'update'])->name('supplier.update');
     Route::delete('/supplier/{supplier}',[SupplierController::class,'destroy'])->name('supplier.destroy');
-    Route::get('/supplier/export', [SupplierController::class, 'export'])->name('supplier.printSuppliersExcel');
+    Route::get('/supplier/exportExcel', [SupplierController::class, 'export'])->name('supplier.printSuppliersExcel');
+    Route::get('/supplier/exportPDF', [SupplierController::class, 'exportPDF'])->name('supplier.printSupplierPdf');
     Route::get('supplier/{supplier}', [SupplierController::class, 'show'])->name('supplier.show');
 
 
@@ -110,7 +115,8 @@ Route::get('/toggle-language', function () {
     Route::get('/product/{product}/edit',[ProductController::class,'edit'])->name('product.edit');
     Route::put('/product/{product}',[ProductController::class,'update'])->name('product.update');
     Route::delete('/product/{product}',[ProductController::class,'destroy'])->name('product.destroy');
-    Route::get('/product/export', [ProductController::class, 'export'])->name('product.printProductsExcel');
+    Route::get('/product/exportExcel', [ProductController::class, 'export'])->name('product.printProductsExcel');
+    Route::get('/product/exportPDF', [ProductController::class, 'exportPDF'])->name('product.printProductPdf');
     Route::get('product/{product}', [ProductController::class, 'show'])->name('product.show');
 
 
@@ -161,7 +167,9 @@ Route::get('/toggle-language', function () {
     Route::post('pos/closeCashbox',[PosBillController::class,'closeCashbox'])->name('pos.closeCashbox');
     Route::get('/pos/print/{id}',[PosBillController::class,'print'])->name('pos.print');
     Route::get('/pos/cashboxReport/{session}',[PosBillController::class,'cashboxReport'])->name('pos.cashboxReport');
-    Route::get('/pos/export', [PosBillController::class, 'export'])->name('pos.printPosBillsExcel');
+    Route::get('/pos/exportExcel', [PosBillController::class, 'export'])->name('pos.printPosBillsExcel');
+    Route::get('/pos/exportPDF', [PosBillController::class, 'exportPDF'])->name('pos.printPosPdf');
+
 
     // عرض صفحة البحث والدين
     Route::get('debts',[DebtController::class,'index'])->name('debts.index');
@@ -170,7 +178,8 @@ Route::get('/toggle-language', function () {
     Route::post('/debts/pay', [DebtController::class, 'payDebt'])->name('debts.pay');
     Route::get('/debts/customer/{customer_id}/{total_remaining?}', [DebtController::class, 'show'])->name('debts.show');
     Route::delete('/debts/{debt}',[DebtController::class,'destroy'])->name('debts.destroy');
-    Route::get('/debts/export', [DebtController::class, 'export'])->name('debts.printDebtsExcel');
+    Route::get('/debts/exportExcel', [DebtController::class, 'export'])->name('debts.printDebtsExcel');
+    Route::get('/debts/exportPDF', [DebtController::class, 'exportPDF'])->name('debts.printDebtsPdf');
 
 
     Route::get('/change-password', [AuthController::class, 'changePasswordForm'])->name('password.change');
@@ -187,7 +196,8 @@ Route::get('/toggle-language', function () {
     Route::get('purchaseReturns/create', [PurchaseReturnController::class, 'create'])->name('purchaseReturns.create');
     Route::post('purchaseReturns', [PurchaseReturnController::class, 'store'])->name('purchaseReturns.store');
     Route::delete('/purchaseReturns/{purchaseReturn}',[PurchaseReturnController::class,'destroy'])->name('purchaseReturns.destroy');
-    Route::get('/purchaseReturns/export', [PurchaseReturnController::class, 'export'])->name('purchaseReturns.printPurchaseReturnsExcel');
+    Route::get('/purchaseReturns/exportExcel', [PurchaseReturnController::class, 'export'])->name('purchaseReturns.printPurchaseReturnsExcel');
+    Route::get('/purchaseReturns/exportPDF', [PurchaseReturnController::class, 'exportPDF'])->name('PurchaseReturnController.printPurchaseReturnsPdf');
     Route::get('purchaseReturns/{purchaseReturn}', [PurchaseReturnController::class, 'show'])->name('purchaseReturns.show');
     Route::get('/purchaseReturns/{purchaseReturn}/edit',[PurchaseReturnController::class,'edit'])->name('purchaseReturns.edit');
     Route::put('/purchaseReturns/{purchaseReturn}',[PurchaseReturnController::class,'update'])->name('purchaseReturns.update');
@@ -196,7 +206,8 @@ Route::get('/toggle-language', function () {
     Route::get('/expenses/create', [ExpenseController::class, 'create'])->name('expenses.create');
     Route::post('/expenses/store', [ExpenseController::class, 'store'])->name('expenses.store');
     Route::get('/expenses/report', [ExpenseController::class, 'report'])->name('expenses.report');
-    Route::get('/expensesg/export', [ExpenseController::class, 'export'])->name('expenses.printExpensesExcel');
+    Route::get('/expenses/exportExcel', [ExpenseController::class, 'export'])->name('expenses.printExpensesExcel');
+    Route::get('/expenses/exportPDF', [ExpenseController::class, 'exportPDF'])->name('expenses.printExpensesPdf');
     Route::get('expenses/{expense}', [ExpenseController::class, 'show'])->name('expenses.show');
 
 
@@ -205,7 +216,8 @@ Route::get('/toggle-language', function () {
     Route::get('/damaged', [DamagedItemController::class, 'index'])->name('damaged.index');
     Route::get('/damaged/create', [DamagedItemController::class, 'create'])->name('damaged.create');
     Route::post('/damaged/store', [DamagedItemController::class, 'store'])->name('damaged.store');
-    Route::get('/damaged/export', [DamagedItemController::class, 'export'])->name('damaged.printDamagedExcel');
+    Route::get('/damaged/exportExel', [DamagedItemController::class, 'export'])->name('damaged.printDamagedExcel');
+    Route::get('/damaged/exportPdf', [DamagedItemController::class, 'exportPDF'])->name('damaged.printDamagedPdf');
     Route::delete('/damaged/{damagedItem}',[DamagedItemController::class,'destroy'])->name('damaged.destroy');
     Route::get('damaged/{damagedItemId}',[DamagedItemController::class,'show'])->name('damaged.show');
     Route::get('/damaged/{damagedItem}/edit',[DamagedItemController::class,'edit'])->name('damaged.edit');
@@ -221,7 +233,8 @@ Route::get('/toggle-language', function () {
     Route::get('salesReturns/create',[SalesReturnController::class,'create'])->name('salesReturn.create');
     Route::post('salesReturns/store',[SalesReturnController::class,'store'])->name('salesReturn.store');
     Route::get('salesReturns/{billNumber}/details', [SalesReturnController::class, 'getBillDetails'])->name('salesReturns.details');
-    Route::get('/salesReturns/export', [SalesReturnController::class, 'export'])->name('salesReturns.printSalesReturnsExcel');
+    Route::get('/salesReturns/exportExcel', [SalesReturnController::class, 'export'])->name('salesReturns.printSalesReturnsExcel');
+    Route::get('/salesReturns/exportPDF', [SalesReturnController::class, 'exportPDF'])->name('salesReturns.printSalesReturnsPdf');
     Route::get('salesReturns/{id}',[SalesReturnController::class,'show'])->name('salesReturns.show');
 
 

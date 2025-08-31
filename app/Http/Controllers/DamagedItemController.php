@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Exports\DamagedItemsExport;
+use Mpdf\Mpdf;
 use App\Models\Product;
 use App\Models\PosSession;
 use App\Models\DamagedItem;
 use Illuminate\Http\Request;
+use Barryvdh\DomPDF\Facade\Pdf;
+use App\Exports\DamagedItemsExport;
 use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -51,7 +53,40 @@ class DamagedItemController extends Controller
             return redirect()->back()->with('error', 'لا توجد بيانات لتصديرها.');
         }
 
-        return Excel::download(new DamagedItemsExport($search), 'damagedItems.xlsx');
+        return Excel::download(new DamagedItemsExport($damagedItems), 'damagedItems.xlsx');
+    }
+
+    public function exportPDF(Request $request)
+    {
+        $search = $request->input('search');
+
+        $damagedItems = DamagedItem::with(['product'])
+            ->when($search, function ($query) use ($search) {
+                $query->where('quantity', 'like', "%$search%")
+                    ->orWhereHas('product', fn($q) => $q->where('name', 'like', "%$search%"));
+            })->get();
+
+        if ($damagedItems->isEmpty()) {
+            return redirect()->back()->with('error', 'لا توجد بيانات لتصديرها.');
+        }
+
+        // تحميل Blade كـ HTML
+        $html = view('damaged.damagedItemsPDF', compact('damagedItems'))->render();
+
+        // إعداد mPDF
+        $mpdf = new Mpdf([
+            'mode' => 'utf-8',
+            'format' => 'A4',
+            'default_font' => app()->getLocale() == 'ar' ? 'Cairo' : 'dejavusans',
+            'directionality' => app()->getLocale() == 'ar' ? 'rtl' : 'ltr',
+        ]);
+
+        // كتابة HTML في PDF
+        $mpdf->WriteHTML($html);
+        $filename = app()->getLocale() == 'ar' ? 'تقرير_التالف.pdf' : 'Damaged_Report.pdf';
+
+        // تحميل PDF مباشرة
+        return $mpdf->Output($filename, 'D');
     }
 
     /**

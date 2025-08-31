@@ -19,10 +19,26 @@
                 <div class="d-flex justify-content-center align-items-center mb-3 gap-2 flex-wrap">
                     <input type="text" id="searchInput" class="form-control w-50  mb-2"  placeholder="@lang('messages.pos.search_pos')">
 
-                    <button id="exportBtn" class="btn btn-success mb-2">
-                        <i class="bi bi-file-earmark-excel"></i>
-                        @lang('messages.pos.export_posBills_excel')
-                    </button>
+                    <!-- Export Dropdown -->
+                    <div class="btn-group mb-2">
+                        <button type="button" class="btn btn-success dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                            @lang('messages.pos.export_posBills')
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <button id="exportExcelBtn" class="dropdown-item">
+                                    <i class="bi bi-file-earmark-excel"></i>
+                                    @lang('messages.export_excel')
+                                </button>
+                            </li>
+                            <li>
+                                <button id="exportPdfBtn" class="dropdown-item">
+                                    <i class="bi bi-file-earmark-pdf"></i>
+                                    @lang('messages.export_pdf')
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
 
                 </div>
                     <div id="posTable">
@@ -46,7 +62,8 @@
 <script>
         document.addEventListener('DOMContentLoaded', function () {
         const searchInput = document.getElementById('searchInput');
-        const exportBtn = document.getElementById('exportBtn'); // لازم يكون موجود زر للتصدير بالـ id هذا
+        const exportBtnExel = document.getElementById('exportExcelBtn');
+        const exportBtnPdf = document.getElementById('exportPdfBtn');
 
         searchInput.addEventListener('keyup', function () {
             let search = this.value;
@@ -62,7 +79,7 @@
             });
         });
 
-        exportBtn.addEventListener('click', function () {
+        exportBtnExel.addEventListener('click', function () {
             const search = searchInput.value.trim();
 
             // تحقق من وجود بيانات في الجدول
@@ -76,6 +93,18 @@
             // اذهب للرابط مع تمرير كلمة البحث
             window.location.href = `{{ route('pos.printPosBillsExcel') }}?search=${encodeURIComponent(search)}`;
         });
+
+        exportPdfBtn.addEventListener('click', function () {
+        const search = searchInput.value.trim();
+        const tableBody = document.querySelector('#posTable table tbody');
+
+        if (!tableBody || tableBody.children.length === 0) {
+            alert('@lang("messages.no_data_to_export")');
+            return;
+        }
+
+        window.location.href = `{{ route('pos.printPosPdf') }}?search=${encodeURIComponent(search)}`;
+    });
     });
 
 </script>

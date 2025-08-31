@@ -44,4 +44,6 @@ class ReportController extends Controller
             'from','to','totalSales','totalProfit','totalExpenses','netProfit','productProfits','totalCostItemDamaged'
         ));
     }
+
+
 }

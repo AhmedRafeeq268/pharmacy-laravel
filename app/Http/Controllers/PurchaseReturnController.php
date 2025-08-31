@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Exports\PurchaseReturnsExport;
+use Mpdf\Mpdf;
 use App\Models\Product;
 use App\Models\PosSession;
 use Illuminate\Http\Request;
@@ -12,6 +12,7 @@ use App\Models\CashBoxTransaction;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\PurchaseReturnsExport;
 
 class PurchaseReturnController extends Controller
 {
@@ -46,13 +47,47 @@ class PurchaseReturnController extends Controller
                     $query->where('purchase_bill_id', 'like', "%{$search}%")
                     ->orWhereHas('supplier', fn($q) => $q->where('name', 'like', "%$search%"))
                     ->orWhereHas('product', fn($q) => $q->where('name', 'like', "%$search%"));
-        })->paginate(8);
+        })->get();
 
         if ($purchaseReturns->isEmpty()) {
             return redirect()->back()->with('error', 'لا توجد بيانات لتصديرها.');
         }
 
-        return Excel::download(new PurchaseReturnsExport($search), 'purchaseReturn.xlsx');
+        return Excel::download(new PurchaseReturnsExport($purchaseReturns), 'purchaseReturn.xlsx');
+    }
+
+    public function exportPDF(Request $request)
+    {
+        $search = $request->input('search');
+
+        $purchaseReturnItems = PurchaseReturn::with(['purchaseBill','supplier','product','creator'])
+            ->when($search, function ($query) use ($search) {
+                    $query->where('purchase_bill_id', 'like', "%{$search}%")
+                    ->orWhereHas('supplier', fn($q) => $q->where('name', 'like', "%$search%"))
+                    ->orWhereHas('product', fn($q) => $q->where('name', 'like', "%$search%"));
+        })->get();
+
+        if ($purchaseReturnItems->isEmpty()) {
+            return redirect()->back()->with('error', 'لا توجد بيانات لتصديرها.');
+        }
+
+        // تحميل Blade كـ HTML
+        $html = view('purchaseReturns.purchaseReturnItemsPDF', compact('purchaseReturnItems'))->render();
+
+        // إعداد mPDF
+        $mpdf = new Mpdf([
+            'mode' => 'utf-8',
+            'format' => 'A4',
+            'default_font' => app()->getLocale() == 'ar' ? 'Cairo' : 'dejavusans',
+            'directionality' => app()->getLocale() == 'ar' ? 'rtl' : 'ltr',
+        ]);
+
+        // كتابة HTML في PDF
+        $mpdf->WriteHTML($html);
+        $filename = app()->getLocale() == 'ar' ? 'تقرير مرجعات المنتجات.pdf' : 'PurchaseReturn_Report.pdf';
+
+        // تحميل PDF مباشرة
+        return $mpdf->Output($filename, 'D');
     }
 
     /**

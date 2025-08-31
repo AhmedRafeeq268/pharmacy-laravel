@@ -9,7 +9,6 @@
             <th scope="col">@lang('messages.pos.discount')</th>
             <th scope="col">@lang('messages.pos.net_amount')</th>
             <th scope="col">@lang('messages.pos.payment_status')</th>
-            <th scope="col">@lang('messages.pos.is_closed_with_cashbox')</th>
             <th scope="col"></th>
         </tr>
     </thead>
@@ -30,7 +29,6 @@
                 <td>{{ $posBill->discount }}</td>
                 <td>{{ $posBill->net_amount }}</td>
                 <td>{{ $posBill->payment_status }}</td>
-                <td>{{ $posBill->is_closed_with_cashbox }}</td>
                             {{-- {{ route('product.edit',['product'=>$product->id ,'page'=>request()->get('page')] ) }} --}}
                            {{-- {{ route('product.destroy', ['product'=>$product->id ,'page'=>request()->get('page')]) }} --}}
                 <td>

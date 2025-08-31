@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Mpdf\Mpdf;
 use Stripe\Charge;
 use Stripe\Stripe;
 use App\Models\Debt;
@@ -53,16 +54,48 @@ class PosBillController extends Controller
                 $query->where('id', 'like', "%$search%")
                       ->orWhereHas('customer', fn($q) => $q->where('name', 'like', "%$search%"))
                       ->orWhereHas('employee', fn($q) => $q->where('name', 'like', "%$search%"));
-            })
-            ->orderBy('id')
-            ->paginate(8)
-            ->appends($request->all());
+            })->get();
 
         if ($posBills->isEmpty()) {
             return redirect()->back()->with('error', 'لا توجد بيانات لتصديرها.');
         }
 
-        return Excel::download(new PosBillsExport($search), 'posBills.xlsx');
+        return Excel::download(new PosBillsExport($posBills), 'posBills.xlsx');
+    }
+
+    public function exportPDF(Request $request)
+    {
+        $search = $request->input('search');
+
+        $posItems= PosBill::with(['customer', 'employee'])
+            ->where('total_amount', '>', 0)
+            ->when($search, function ($query) use ($search) {
+                $query->where('id', 'like', "%$search%")
+                      ->orWhereHas('customer', fn($q) => $q->where('name', 'like', "%$search%"))
+                      ->orWhereHas('employee', fn($q) => $q->where('name', 'like', "%$search%"));
+            })->get();
+
+        if ($posItems->isEmpty()) {
+            return redirect()->back()->with('error', 'لا توجد بيانات لتصديرها.');
+        }
+
+        // تحميل Blade كـ HTML
+        $html = view('pos.posItemsPDF', compact('posItems'))->render();
+
+        // إعداد mPDF
+        $mpdf = new Mpdf([
+            'mode' => 'utf-8',
+            'format' => 'A4',
+            'default_font' => app()->getLocale() == 'ar' ? 'Cairo' : 'dejavusans',
+            'directionality' => app()->getLocale() == 'ar' ? 'rtl' : 'ltr',
+        ]);
+
+        // كتابة HTML في PDF
+        $mpdf->WriteHTML($html);
+        $filename = app()->getLocale() == 'ar' ? 'تقرير المبيعات.pdf' : 'Pos_Report.pdf';
+
+        // تحميل PDF مباشرة
+        return $mpdf->Output($filename, 'D');
     }
 
     public function create(Request $request, $pos_bill_id = null)

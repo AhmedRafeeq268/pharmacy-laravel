@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Mpdf\Mpdf;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use App\Exports\PosBillsExport;
@@ -39,13 +40,46 @@ class ProductController extends Controller
         ->when($search, function ($query) use ($search) {
             $query->where('name', 'like', "%$search%")
                 ->orWhereHas('productCategory', fn($q) => $q->where('name', 'like', "%$search%"));
-        })->paginate(8);
+        })->get();
 
         if ($products->isEmpty()) {
             return redirect()->back()->with('error', 'لا توجد بيانات لتصديرها.');
         }
 
-        return Excel::download(new ProductsExport($search), 'product.xlsx');
+        return Excel::download(new ProductsExport($products), 'product.xlsx');
+    }
+
+    public function exportPDF(Request $request)
+    {
+        $search = $request->input('search');
+
+        $productsItems = Product::with(['productCategory'])
+        ->when($search, function ($query) use ($search) {
+            $query->where('name', 'like', "%$search%")
+                ->orWhereHas('productCategory', fn($q) => $q->where('name', 'like', "%$search%"));
+        })->get();
+
+        if ($productsItems->isEmpty()) {
+            return redirect()->back()->with('error', 'لا توجد بيانات لتصديرها.');
+        }
+
+        // تحميل Blade كـ HTML
+        $html = view('product.productItemsPDF', compact('productsItems'))->render();
+
+        // إعداد mPDF
+        $mpdf = new Mpdf([
+            'mode' => 'utf-8',
+            'format' => 'A4',
+            'default_font' => app()->getLocale() == 'ar' ? 'Cairo' : 'dejavusans',
+            'directionality' => app()->getLocale() == 'ar' ? 'rtl' : 'ltr',
+        ]);
+
+        // كتابة HTML في PDF
+        $mpdf->WriteHTML($html);
+        $filename = app()->getLocale() == 'ar' ? 'تقرير المنتجات.pdf' : 'Product_Report.pdf';
+
+        // تحميل PDF مباشرة
+        return $mpdf->Output($filename, 'D');
     }
 
     /**

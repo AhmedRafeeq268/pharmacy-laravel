@@ -9,32 +9,24 @@ use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 
 class ProductsExport implements FromCollection, WithHeadings,ShouldAutoSize
 {
-    protected $search;
+    protected $products;
 
-    public function __construct($search = null)
+    public function __construct($products)
     {
-        $this->search = $search;
+        $this->products = $products;
     }
 
     public function collection()
     {
-        $query = Product::with(['productCategory']);
-        if (!empty($this->search)) {
-            $query->where('name', 'like', '%' . $this->search . '%')
-                  ->orWhereHas('productCategory', function ($q) {
-                    $q->where('name', 'like', '%' . $this->search . '%');
-                });
-        }
-
-        return $query->get()->map(function ($product) {
+        return $this->products->map(function ($product) {
             return [
-                'Id'                   => $product->id,
-                'Name'                 => $product->name,
-                'manufacture_company'  => $product->manufacture_company,
-                'productCategory'      => $product->productCategory->name ?? 'غير محدد',
-                'unit_price'           => $product->unit_price,
-                'barcode'              => $product->barcode,
-                'Created At'           => $product->created_at->format('Y-m-d'),
+                 $product->id,
+                 $product->name,
+                 $product->manufacture_company,
+                 $product->productCategory->name ?? 'غير محدد',
+                 $product->unit_price,
+                 $product->barcode,
+                 $product->created_at->format('Y-m-d'),
             ];
         });
     }

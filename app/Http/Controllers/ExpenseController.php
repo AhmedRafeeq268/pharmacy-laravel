@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use id;
+use Mpdf\Mpdf;
 use App\Models\Expense;
 use App\Models\PosSession;
 use Illuminate\Http\Request;
@@ -45,14 +46,49 @@ class ExpenseController extends Controller
                     ->orWhere('description', 'like', "%{$search}%")
                     ->orWhere('amount', 'like', "%{$search}%")
                     ->orWhereHas('user', fn($q) => $q->where('name', 'like', "%$search%"));
-        })->orderBy('id', 'desc')->get();
+        })->get();
 
 
         if ($expenses->isEmpty()) {
             return redirect()->back()->with('error', 'لا توجد بيانات لتصديرها.');
         }
 
-        return Excel::download(new ExpensesExport($search), 'expenses.xlsx');
+        return Excel::download(new ExpensesExport($expenses), 'expenses.xlsx');
+    }
+
+    public function exportPDF(Request $request)
+    {
+        $search = $request->input('search');
+
+        $expensesItems = Expense::with(['user'])
+            ->when($search, function ($query) use ($search) {
+                    $query->where('type', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%")
+                    ->orWhere('amount', 'like', "%{$search}%")
+                    ->orWhereHas('user', fn($q) => $q->where('name', 'like', "%$search%"));
+        })->get();
+
+        if ($expensesItems->isEmpty()) {
+            return redirect()->back()->with('error', 'لا توجد بيانات لتصديرها.');
+        }
+
+        // تحميل Blade كـ HTML
+        $html = view('expenses.expensesItemsPDF', compact('expensesItems'))->render();
+
+        // إعداد mPDF
+        $mpdf = new Mpdf([
+            'mode' => 'utf-8',
+            'format' => 'A4',
+            'default_font' => app()->getLocale() == 'ar' ? 'Cairo' : 'dejavusans',
+            'directionality' => app()->getLocale() == 'ar' ? 'rtl' : 'ltr',
+        ]);
+
+        // كتابة HTML في PDF
+        $mpdf->WriteHTML($html);
+        $filename = app()->getLocale() == 'ar' ? 'تقرير المصروفات.pdf' : 'Expenses_Report.pdf';
+
+        // تحميل PDF مباشرة
+        return $mpdf->Output($filename, 'D');
     }
 
 

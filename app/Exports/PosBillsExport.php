@@ -12,28 +12,17 @@ use Maatwebsite\Excel\Concerns\WithColumnFormatting;
 
 class PosBillsExport implements FromCollection, WithHeadings, WithMapping, WithColumnFormatting, ShouldAutoSize
 {
-    protected $search;
+    protected $posBills;
 
-    public function __construct($search = null)
+    public function __construct($posBills)
     {
-        $this->search = $search;
+        $this->posBills = $posBills;
     }
 
     public function collection()
     {
-        $query = PosBill::with(['customer', 'employee']);
+        return $this->posBills;
 
-        if (!empty($this->search)) {
-            $query->where('id', 'like', '%' . $this->search . '%')
-                ->orWhereHas('customer', function ($q) {
-                    $q->where('name', 'like', '%' . $this->search . '%');
-                })
-                ->orWhereHas('employee', function ($q) {
-                    $q->where('name', 'like', '%' . $this->search . '%');
-                });
-        }
-
-        return $query->get();
     }
 
     public function map($posBill): array
@@ -46,7 +35,6 @@ class PosBillsExport implements FromCollection, WithHeadings, WithMapping, WithC
             $posBill->discount,
             $posBill->net_amount,
             $posBill->payment_status,
-            $posBill->is_closed_with_cashbox ? 'Yes' : 'No',
             $posBill->created_at->format('Y-m-d'),
         ];
     }
@@ -61,7 +49,6 @@ class PosBillsExport implements FromCollection, WithHeadings, WithMapping, WithC
             'Discount',
             'Net Amount',
             'Payment Status',
-            'Closed With Cashbox',
             'Created At',
         ];
     }

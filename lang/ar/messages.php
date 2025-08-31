@@ -92,7 +92,7 @@ return [
         'address_details' => 'تفاصيل العنوان',
         'edit_customer_data' => 'تعديل بيانات الزبون',
         'search_customer' => 'ابحث باستخدام الاسم او رقم الهوية او رقم الهاتف',
-        'export_customers_excel' => 'طباعة بيانات الزبائن اكسل',
+        'export_customers' => 'طباعة بيانات الزبائن ',
         'active' => 'فعال',
         'inActive' => 'غير فعال',
         'select_status' => 'اختر الحالة',
@@ -114,8 +114,7 @@ return [
         'select_wallet' => 'اختر نوع المحفظة',
         'edit_employee_data' => 'تعديل بيانات الموظف',
         'search_employee' => 'ابحث باستخدام الاسم او رقم الهوية او رقم الهاتف',
-        'export_employees_excel' => 'طباعة بيانات الموظفين اكسل',
-
+        'export_employees' => 'طباعة بيانات الموظفين ',
 
 
      ],
@@ -134,7 +133,7 @@ return [
         'select_wallet' => 'اختر نوع المحفظة',
         'edit_distributor_data' => 'تعديل بيانات الموزع',
         'search_suppliers' => 'ابحث باستخدام الاسم او رقم الهاتف',
-        'export_suppliers_excel' => 'طباعة بيانات الموردين اكسل',
+        'export_suppliers' => 'طباعة بيانات الموردين ',
 
 
     ],
@@ -166,7 +165,7 @@ return [
         'unit_price' => 'سعر الوحدة',
         'price_sell'=>'سعر البيع',
         'barcode' => 'رقم المنتج',
-        'export_products_excel' => 'طباعة بيانات المنتجات اكسل',
+        'export_products' => 'طباعة بيانات المنتجات ',
         'quantity'=> 'الكمية',
 
     ],
@@ -242,12 +241,15 @@ return [
         'ask_to_print' => 'هل ترغب بطباعة الفاتورة؟',
         'search_pos'   =>   'ابحث باستخدام رقم الفاتورة أو اسم الزبون أو اسم الموظف',
         'pos_number'   =>   'رقم فاتورة البيع',
+        'customer_name'   =>   'اسم الزبون',
+        'employee_name'   =>   'اسم الموظف',
         'is_closed_with_cashbox' => 'هل تم اغلاق الصندوق',
         'export_employees_excel' => 'طباعة بيانات الموظفين اكسل',
         'export_posBills_excel' => 'طباعة بيانات فواتير البيع اكسل',
         'pay_cash' => 'دفع نقداً',
         'pay_visa' => 'دفع بالفيزا',
         'pay_debt' => 'دين',
+
 
 
     ],
@@ -306,7 +308,7 @@ return [
         'return_products_to_supplier' => 'إرجاع منتجات للمورد',
         'view_purchase_returns' => 'عرض مرتجعات الموردين',
         'search_return' => 'ابحث باستخدام رقم الفاتورة او اسم المنتج',
-        'export_purchase_return_excel' => 'تصدير مرتجعات الموردين إلى اكسل',
+        'export_purchase_return' => 'تصدير مرتجعات الموردين',
         'add_new_purchase_return' => 'إضافة مرتجعات جديدة للمورد',
         'purchase_bill_id'    => 'رقم فاتورة الشراء',
         'supplier_name'       => 'اسم المورد',
@@ -340,7 +342,7 @@ return [
         'type' => 'النوع',
         'total' => 'المجموع',
         'search_expense' => 'ابحث باستخدام النوع او الوصف او القيمة او تاريخ الصرف',
-        'export_expenses_excel' => 'تصدير المصروفات إلى Excel',
+        'export_expenses' => 'تصدير المصروفات  ',
         'created_by'          => 'تم الإنشاء بواسطة',
 
     ],
@@ -354,12 +356,13 @@ return [
         'damage_reason' => 'سبب التلف',
         'save_damaged_item' => 'تسجيل تالف',
         'search_damaged' => 'ابحث باستخدام اسم المنتج والكمية',
-        'export_damaged_excel' => 'تصدير التالف إلى Excel',
+        'export_damaged' => 'تصدير التالف ',
         'prodact_name'=>'اسم المنتج',
-        'reported_by' => 'تم الإبلاغ بواسطة',
+        'reported_by' => 'تم الاتلاف بواسطة',
         'add_new_damaged_items' => 'إضافة أصناف تالفة جديدة',
         'edit_damage_item' => 'تعديل عنصر تالف',
         'not_enough_stock' => 'الكمية المطلوبة غير متوفرة في المخزون',
+        'cost'                 => 'التكلفة',
 
     ],
 
@@ -392,7 +395,7 @@ return [
         'payment_failed'     => 'فشل في الدفع.',
         'error_during_payment' => 'حدث خطأ أثناء الدفع.',
         'search_debt' => 'ابحث باستخدام اسم الزبون',
-        'export_debts_excel' => 'طباعة الديون اكسل',
+        'export_debts' => 'تصدير الديون ',
         'customer_name' => 'اسم الزبون',
         'pos_bill_id' => 'رقم فاتورة البيع',
         'status' => 'الحالة',
@@ -452,7 +455,7 @@ return [
 
 
         'search_placeholder'     => 'ابحث باستخدام اسم الزبون او رقم الفاتورة او طريقة ارجاع النقود',
-        'export_excel'           => 'تصدير اكسل',
+        'export_salesRetun' => 'تصدير مرتجعات الزبائن',
         'add_new_return'         => 'اضافة مرتجع جديد',
 
 
@@ -481,6 +484,20 @@ return [
         'cancel' => 'إلغاء',
         'unknown' => 'غير معروف',
         'show_report' => 'عرض التقرير',
+        'damaged_items_report' => 'تقرير الأصناف التالفة',
+        'damaged_report' => 'تقرير التالف',
+        'customer_report' => 'تقرير الزبائن',
+        'employee_report' => 'تقرير الموظفين',
+        'supplier_report' => 'تقرير الموردين',
+        'product_report' => 'تقرير المنتجات',
+        'pos_report' => 'تقرير فواتير المبيعات',
+        'purchaseReturn_report' => 'تقرير مرتجعات فواتير الموردين',
+        'salesReturn_report' => 'تقرير مرتجعات فواتير الزبائن',
+        'expenses_report' => 'تقرير المصروفات',
+
+        'Sheikh_nasser_pharmacy'=>'صيدلية الشيخ ناصر',
+        'address' => 'العنوان',
+        'phone' => 'الهاتف',
     ],
 
 
@@ -528,6 +545,9 @@ return [
      'purchaseReturns_details' => 'تفاصيل مرتجعات الموردين',
      'damaged_details' => 'تفاصيل المنتجات التالفة',
      'sales_return_details' => 'بيانات المرتجع',
+     'created_at' => 'تاريخ الإنشاء',
+
+
 
     'back_to_list'       => 'العودة إلى القائمة',
     'edit'               => 'تعديل',
@@ -536,6 +556,9 @@ return [
     'yes'      =>'نعم',
     'no'       =>'لا',
     'shekel'   =>'₪',
+
+    'export_excel' => 'تصدير الى اكسل ',
+    'export_pdf' => 'تصدير بدي اف',
 
 
 ];

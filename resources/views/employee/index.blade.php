@@ -19,10 +19,26 @@
                 <div class="d-flex justify-content-center align-items-center mb-3 gap-2 flex-wrap">
                     <input type="text" id="searchInput" class="form-control w-50 mb-2" placeholder="@lang('messages.employee.search_employee')">
 
-                    <button id="exportBtn" class="btn btn-success mb-2">
-                        <i class="bi bi-file-earmark-excel"></i>
-                        @lang('messages.employee.export_employees_excel')
-                    </button>
+                    <!-- Export Dropdown -->
+                    <div class="btn-group mb-2">
+                        <button type="button" class="btn btn-success dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                            @lang('messages.employee.export_employees')
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <button id="exportExcelBtn" class="dropdown-item">
+                                    <i class="bi bi-file-earmark-excel"></i>
+                                    @lang('messages.export_excel')
+                                </button>
+                            </li>
+                            <li>
+                                <button id="exportPdfBtn" class="dropdown-item">
+                                    <i class="bi bi-file-earmark-pdf"></i>
+                                    @lang('messages.export_pdf')
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
 
                 <div id="employeeTable">
@@ -41,43 +57,57 @@
     </div>
     <!--/End body container section-->
 @endsection
+@push('scripts')
 <script>
-        document.addEventListener('DOMContentLoaded', function () {
-        const searchInput = document.getElementById('searchInput');
-        const exportBtn = document.getElementById('exportBtn'); // لازم يكون موجود زر للتصدير بالـ id هذا
+document.addEventListener('DOMContentLoaded', function () {
 
-        searchInput.addEventListener('keyup', function () {
-            let search = this.value;
+    const searchInput    = document.getElementById('searchInput');
+    const exportExcelBtn = document.getElementById('exportExcelBtn');
+    const exportPdfBtn   = document.getElementById('exportPdfBtn');
 
-            fetch(`{{ route('employee.index') }}?search=${encodeURIComponent(search)}`, {
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            })
-            .then(response => response.text())
-            .then(data => {
-                document.getElementById('employeeTable').innerHTML = data;
-            });
-        });
+    // 🔍 البحث عبر AJAX
+    searchInput.addEventListener('keyup', function () {
+        const search = this.value;
 
-        exportBtn.addEventListener('click', function () {
-            const search = searchInput.value.trim();
-
-            // تحقق من وجود بيانات في الجدول
-            // مثلا إذا جدول العملاء فيه صفوف <tr> في tbody، أو أي عنصر يعبر عن وجود بيانات
-            const tableBody = document.querySelector('#employeeTable table tbody');
-            if (!tableBody || tableBody.children.length === 0) {
-                alert('لا توجد بيانات لتصديرها.');
-                return;
-            }
-
-            // اذهب للرابط مع تمرير كلمة البحث
-            window.location.href = `{{ route('employee.printEmployeesExcel') }}?search=${encodeURIComponent(search)}`;
+        fetch(`{{ route('employee.index') }}?search=${encodeURIComponent(search)}`, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(response => response.text())
+        .then(data => {
+            document.getElementById('employeeTable').innerHTML = data;
         });
     });
 
+    // 📊 تصدير Excel
+    exportExcelBtn.addEventListener('click', function () {
+        const search = searchInput.value.trim();
+        const tableBody = document.querySelector('#employeeTable table tbody');
+
+        if (!tableBody || tableBody.children.length === 0) {
+            alert('@lang("messages.no_data_to_export")');
+            return;
+        }
+
+        window.location.href = `{{ route('employee.printEmployeesExcel') }}?search=${encodeURIComponent(search)}`;
+    });
+
+    // 📑 تصدير PDF
+    exportPdfBtn.addEventListener('click', function () {
+        const search = searchInput.value.trim();
+        const tableBody = document.querySelector('#employeeTable table tbody');
+
+        if (!tableBody || tableBody.children.length === 0) {
+            alert('@lang("messages.no_data_to_export")');
+            return;
+        }
+
+        window.location.href = `{{ route('employee.printEmployeePdf') }}?search=${encodeURIComponent(search)}`;
+    });
+
+});
 </script>
 
+@endpush
 
 
 

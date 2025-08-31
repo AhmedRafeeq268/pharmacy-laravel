@@ -93,7 +93,7 @@ return[
         'address_details' => 'Address Details',
         'edit_customer_data' => 'Edit Customer Data',
         'search_customer' => ' Search Whith Name Or Id Card Or Phone Number',
-        'export_customers_excel' => 'Export Customers Data to Excel',
+        'export_customers' => 'Export Customers Data',
         'active' => 'active',
         'inActive' => 'InActive',
         'select_status' => 'Select Status',
@@ -116,7 +116,7 @@ return[
         'select_wallet' => 'Select Wallet Type',
         'edit_employee_data' => 'Edit Employee Data',
         'search_employee' => ' Search Whith Name Or Id Card Or Phone Number',
-        'export_employees_excel' => 'Export Employees Data to Excel',
+        'export_employees' => 'Export Employees Data  ',
 
 
 
@@ -136,7 +136,7 @@ return[
         'select_wallet' => 'Select Wallet Type',
         'edit_distributor_data' => 'Edit Distributor Data',
         'search_suppliers' => 'Search by Name or Phone Number',
-        'export_suppliers_excel' => 'Export Suppliers Data To Excel',
+        'export_suppliers' => 'Export Suppliers Data',
 
 
 
@@ -169,7 +169,7 @@ return[
         'unit_price' => 'Unit Price',
         'price_sell'=>'Price Sell',
         'barcode' => 'Barcode',
-        'export_products_excel' => 'Export Products Date To Excel',
+        'export_products' => 'Export Products Date',
         'quantity' =>'Quantity',
 
 
@@ -246,8 +246,10 @@ return[
         'ask_to_print' => 'Would you like to print the invoice?',
         'search_pos'   =>   'Search by bill number, customer name, or employee name',
         'pos_number'   =>   'Pos Bill Number',
+        'customer_name'   =>   'Customer Name',
+        'employee_name'   =>   'Employee Name',
         'is_closed_with_cashbox' => 'Is losed With Cashbox',
-        'export_posBills_excel' => 'Export PosBills Data to Excel',
+        'export_posBills' => 'Export PosBills Data',
         'pay_cash' => 'Pay Cash',
         'pay_visa' => 'Pay by Visa',
         'pay_debt' => 'Debt',
@@ -310,7 +312,7 @@ return[
         'return_products_to_supplier' => 'Return Products to Supplier',
         'view_purchase_returns' => 'View Purchase Returns',
         'search_return' =>'Search by Bill Number or Product Name',
-        'export_purchase_return_excel' => 'Export Purchase Returns to Excel',
+        'export_purchase_return' => 'Export Purchase Returns',
         'add_new_purchase_return' => 'Add New Purchase Returns',
         'purchase_bill_id'    => 'Purchase Bill ID',
         'supplier_name'       => 'Supplier Name',
@@ -345,7 +347,7 @@ return[
         'type' => 'Type',
         'total' => 'Total',
         'search_expense' => 'Search by type, description, amount, or expense date',
-        'export_expenses_excel' => 'Export expenses to Excel',
+        'export_expenses' => 'Export expenses',
         'created_by'          => 'Created By',
 
     ],
@@ -359,12 +361,13 @@ return[
         'damage_reason' => 'Reason for Damage',
         'save_damaged_item' => 'Save Damaged Item',
         'search_damaged' => 'Search by product name and quantity',
-        'export_damaged_excel' => 'Export damaged items to Excel',
+        'export_damaged' => 'Export damaged items ',
         'prodact_name' =>'Product Name',
         'reported_by' => 'Reported by',
         'add_new_damaged_items' => 'Add New Damaged Items',
         'edit_damage_item' => 'Edit Damaged Item',
         'not_enough_stock' => 'The requested quantity is not available in stock',
+        'cost'                 => 'Cost',
 
 
     ],
@@ -397,7 +400,7 @@ return[
         'payment_failed'     => 'Payment failed.',
         'error_during_payment' => 'An error occurred during payment.',
         'search_debt' => 'Search by customer name ',
-        'export_debts_excel' => 'Export debts to Excel',
+        'export_debts' => 'Export debts',
         'customer_name' => 'Customer Name',
         'pos_bill_id' => 'POS Bill Number',
         'status' => 'Status',
@@ -450,12 +453,14 @@ return[
         'error_occurred'            => 'An error occurred',
 
         'pos_bill_number'          => 'POS Bill Number',
+        'refund_method'          => 'Refund Method',
         'product_name'             => 'Product Name',
         'quantity'                 => 'Quantity',
         'subtotal'                 => 'Subtotal',
 
-        'search_placeholder'     => 'Search by customer name, invoice number, or refund method',
-        'export_excel'           => 'Export Excel',
+        'search_placeholder'     => 'Search by customer name, bill number, or refund method',
+        'export_salesRetun' => ' Export Sales Return',
+
         'add_new_return'         => 'Add New Return',
     ],
 
@@ -481,6 +486,22 @@ return[
         'cancel' => 'Cancel',
         'unknown' => 'Unknown',
         'show_report' => 'Show Report',
+        'damaged_items_report' => 'Damaged Items Report',
+        'damaged_report' => 'Damaged Report',
+        'customer_report' => 'Customer Report',
+        'supplier_report' => 'Supplier Report',
+        'product_report' => 'Product Report',
+        'pos_report' => 'Pos Report',
+        'purchaseReturn_report' => 'Purchase Return Report',
+        'salesReturn_report' => 'Sales Return Report',
+        'expenses_report' => 'Expenses Report',
+        'debts_report' => 'Debts Report',
+
+
+        'Sheikh_nasser_pharmacy'=>'Sheikh Nasser Pharmacy',
+        'address' => 'Address',
+        'phone' => 'Phone',
+
     ],
 
     'localization' => 'en',
@@ -527,6 +548,7 @@ return[
     'purchaseReturns_details' => 'Purchase Returns Details',
     'damaged_details' => 'Damaged Details',
     'sales_return_details' => 'Sales Return Details',
+    'created_at' => 'Created At',
 
 
     'no_data_to_export'      => 'No data to export.',
@@ -539,6 +561,8 @@ return[
     'no'                =>'No',
     'shekel'   =>'₪',
 
+    'export_excel' => ' Export to Excel ',
+    'export_pdf' => 'Export to PDF',
 
 
 

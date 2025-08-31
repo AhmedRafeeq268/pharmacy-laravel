@@ -8,7 +8,10 @@
 
     <title>@yield('title')</title>
 
-    <link href="{{ asset('css/bootstrap.min.css') }}" rel="stylesheet" />
+    {{-- <link href="{{ asset('css/bootstrap.min.css') }}" rel="stylesheet" /> --}}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+
     <link href="{{ asset('css/icon.css') }}" rel="stylesheet" />
     <link href="{{ asset('css/style.css') }}" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
@@ -294,7 +297,10 @@
 
 <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
 <script type="text/javascript" src="{{ asset('/js/jquery-2.1.4.min.js') }}"></script>
-<script src="{{ asset('/js/bootstrap.min.js') }}"></script>
+{{-- <script src="{{ asset('/js/bootstrap.min.js') }}"></script> --}}
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js"></script>
+
 <script src="{{ asset('/js/js.js') }}"></script>
 <script src="{{ asset('libs/sweetalert2/sweetalert2@11.js') }}"></script>
 <!-- SweetAlert2 JS -->

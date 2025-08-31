@@ -25,20 +25,6 @@
                 <td>
                     <div class="d-flex justify-content-center align-items-center gap-2">
                         <a href="{{ route('debts.show', $debt->customer_id) }}" class="btn btn-info btn-sm">@lang('messages.view')</a>
-                        {{-- {{ route('customer.show',['customer' => $customer->id]) }} --}}
-                        {{-- <a href="" --}}
-                        {{-- {{ route('customer.edit', ['customer' => $customer->id, 'page' => request()->get('page')]) }} --}}
-                        {{-- class="btn btn-primary btn-sm">@lang('messages.edit')</a> --}}
-
-                        {{-- <form action="{{ route('debts.destroy', ['debt' => $debt->id, 'page' => request()->get('page')]) }}
-                        "
-                            method="POST"
-                            onsubmit="return confirm('Are you sure?')"
-                            class="d-inline-block m-0 p-0">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="btn btn-danger btn-sm">@lang('messages.delete')</button>
-                        </form> --}}
                     </div>
                 </td>
 

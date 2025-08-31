@@ -21,10 +21,26 @@
                 <input type="text" id="searchInput" class="form-control w-50 mb-2"
                        placeholder="@lang('messages.salesReturn.search_placeholder')">
 
-                <button id="exportBtn" class="btn btn-success mb-2">
-                    <i class="bi bi-file-earmark-excel"></i>
-                    @lang('messages.salesReturn.export_excel')
-                </button>
+                <!-- Export Dropdown -->
+                    <div class="btn-group mb-2">
+                        <button type="button" class="btn btn-success dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                            @lang('messages.salesReturn.export_salesRetun')
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <button id="exportExcelBtn" class="dropdown-item">
+                                    <i class="bi bi-file-earmark-excel"></i>
+                                    @lang('messages.export_excel')
+                                </button>
+                            </li>
+                            <li>
+                                <button id="exportPdfBtn" class="dropdown-item">
+                                    <i class="bi bi-file-earmark-pdf"></i>
+                                    @lang('messages.export_pdf')
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
             </div>
 
             <div id="salesReturnsTable">
@@ -48,7 +64,8 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const searchInput = document.getElementById('searchInput');
-    const exportBtn = document.getElementById('exportBtn');
+    const exportBtnExcel = document.getElementById('exportExcelBtn');
+    const exportBtnPdf = document.getElementById('exportPdfBtn');
 
     searchInput.addEventListener('keyup', function () {
         let search = this.value;
@@ -64,7 +81,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    exportBtn.addEventListener('click', function () {
+    exportBtnExcel.addEventListener('click', function () {
         const search = searchInput.value.trim();
 
         const tableBody = document.querySelector('#salesReturnsTable table tbody');
@@ -74,6 +91,18 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         window.location.href = `{{ route('salesReturns.printSalesReturnsExcel') }}?search=${encodeURIComponent(search)}`;
+    });
+
+    exportPdfBtn.addEventListener('click', function () {
+        const search = searchInput.value.trim();
+        const tableBody = document.querySelector('#salesReturnsTable table tbody');
+
+        if (!tableBody || tableBody.children.length === 0) {
+            alert('@lang("messages.no_data_to_export")');
+            return;
+        }
+
+        window.location.href = `{{ route('salesReturns.printSalesReturnsPdf') }}?search=${encodeURIComponent(search)}`;
     });
 });
 </script>

@@ -10,29 +10,22 @@ use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 class SuppliersExport implements FromCollection,WithHeadings,ShouldAutoSize
 {
 
-    protected $search;
+    protected $suppliers;
 
-    public function __construct($search = null)
+    public function __construct($suppliers)
     {
-        $this->search = $search;
+        $this->suppliers = $suppliers;
     }
 
     public function collection()
     {
-        $query = Supplier::select('id','name','phone','email','created_at');
-
-        if (!empty($this->search)) {
-            $query->where('name', 'like', '%' . $this->search . '%')
-                  ->orWhere('phone', 'like','%' . $this->search . '%');;
-        }
-
-        return $query->get()->map(function ($supplier) {
+        return $this->suppliers->map(function ($supplier) {
             return [
-                'Id'               => $supplier->id,
-                'Name'             => $supplier->name,
-                'Phone'            => $supplier->phone,
-                'Email'            => $supplier->email,
-                'Created At'       => $supplier->created_at->format('Y-m-d'),
+                 $supplier->id,
+                 $supplier->name,
+                 $supplier->phone,
+                 $supplier->email,
+                 $supplier->created_at->format('Y-m-d'),
             ];
         });
 
