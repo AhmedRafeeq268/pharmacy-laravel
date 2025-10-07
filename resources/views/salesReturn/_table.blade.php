@@ -31,7 +31,7 @@
                     <td>{{ $detail->subtotal }}</td>
                     <td>
                         <div class="d-flex justify-content-center align-items-center gap-2">
-                            <a href="{{ route('salesReturns.show',['id' => $salesReturn->id]) }}" class="btn btn-info btn-sm">@lang('messages.view')</a>
+                            <a href="{{ route('salesReturn.show',['id' => $salesReturn->id]) }}" class="btn btn-info btn-sm">@lang('messages.view')</a>
                         </div>
                     </td>
                 </tr>

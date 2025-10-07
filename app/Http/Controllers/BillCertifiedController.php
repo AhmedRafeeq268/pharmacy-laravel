@@ -6,11 +6,13 @@ use App\Models\BalanceStore;
 use Illuminate\Http\Request;
 use App\Models\PurchasesBills;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use App\Models\PurchasesBillsDetails;
 
 class BillCertifiedController extends Controller
 {
     public function index($billId){
+        abort_if(Gate::denies('certified-purchase-bill'), 403);
         $billDetailsItems = PurchasesBillsDetails::where('bill_id',$billId)->get();
         $bills=PurchasesBills::where('id',$billId)->get();
         return view('certified.index',compact('billDetailsItems','billId','bills'));

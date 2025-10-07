@@ -8,13 +8,17 @@ use App\Models\Supplier;
 use App\Models\BankAccount;
 use Illuminate\Http\Request;
 use App\Exports\SuppliersExport;
+use Illuminate\Support\Facades\Gate;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Http\Requests\StoreSupplierRequest;
+use App\Http\Requests\UpdateSupplierRequest;
 
 class SupplierController extends Controller
 {
 
     public function index(Request $request)
     {
+        abort_if(Gate::denies('view-supplier'), 403);
         $search = $request->input('search');
 
         $suppliers = supplier::when($search, function ($query, $search) {
@@ -85,6 +89,7 @@ class SupplierController extends Controller
      */
     public function create()
     {
+        abort_if(Gate::denies('create-supplier'), 403);
         $banks = CodesTb::where('main_cd',1)->where('sub_cd', '>', 0)->get();
         $wallets = CodesTb::where('main_cd',6)->where('sub_cd', '>', 0)->get();
         return view('suppliers.create',compact("banks","wallets"));
@@ -93,25 +98,17 @@ class SupplierController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(){
-        request()->validate([
-            'name' => ['required'],
-            'phone' => ['required'],
-            'email' => ['required'],
-            'bank_account' => ['nullable', 'numeric'],
-            'bank_name' => ['nullable', 'integer'],
-            'wallet_phone' => ['nullable', 'numeric'],
-            'wallet_type' => ['nullable', 'integer'],
-        ]);
+    public function store(StoreSupplierRequest $request){
+        $data = request()->validated();
 
         // $data = request()->all();
-        $name = request()->name;
-        $phone = request()->phone;
-        $email = request()->email;
-        $bank_account = request()->bank_account;
-        $bank_name = request()->bank_name;
-        $wallet_phone = request()->wallet_phone;
-        $wallet_type = request()->wallet_type;
+        $name = $data['name'];
+        $phone = $data['phone'];
+        $email = $data['email'];
+        $bank_account = $data['bank_account'];
+        $bank_name = $data['bank_name'];
+        $wallet_phone = $data['wallet_phone'];
+        $wallet_type = $data['wallet_type'];
 
         $supplier = Supplier::create([
             'name'=>$name,
@@ -135,6 +132,7 @@ class SupplierController extends Controller
      * Display the specified resource.
      */
     public function show($id){
+        abort_if(Gate::denies('view-supplier'), 403);
         $supplier = Supplier::findOrFail($id);
         return view('suppliers.show',compact('supplier'));
     }
@@ -144,6 +142,7 @@ class SupplierController extends Controller
      */
     public function edit($supplierId)
     {
+        abort_if(Gate::denies('edit-supplier'), 403);
         $supplier=Supplier::findOrFail($supplierId);
         $wallets = CodesTb::where('main_cd',6)->where('sub_cd', '>', 0)->get();
         $banks = CodesTb::where('main_cd',1)->where('sub_cd', '>', 0)->get();
@@ -154,22 +153,14 @@ class SupplierController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update($supplierId)
+    public function update(UpdateSupplierRequest $request , $supplierId)
     {
-        request()->validate([
-                'name' => ['required'],
-                'phone' => ['required'],
-                'email' => ['required'],
-                'bank_account' => ['nullable', 'numeric'],
-                'bank_name' => ['nullable', 'integer'],
-                'wallet_phone' => ['nullable', 'numeric'],
-                'wallet_type' => ['nullable', 'integer'],
-            ]);
+       $data = request()->validated();
 
             // $data = request()->all();
-            $name = request()->name;
-            $phone = request()->phone;
-            $email = request()->email;
+            $name = $data['name'];
+            $phone = $data['phone'];
+            $email = $data['email'];
 
             $supplier = Supplier::findOrFail($supplierId);
             $supplier->update([
@@ -186,10 +177,10 @@ class SupplierController extends Controller
                 $bankAccount->accountable_type_cd = 2; // 2 معناها موزع
             }
 
-            $bankAccount->IPAN = request()->bank_account;
-            $bankAccount->bank_cd = request()->bank_name;
-            $bankAccount->wallet_phone_number = request()->wallet_phone;
-            $bankAccount->wallet_cd = request()->wallet_type;
+            $bankAccount->IPAN = $data['bank_account'];
+            $bankAccount->bank_cd = $data['bank_name'];
+            $bankAccount->wallet_phone_number = $data['wallet_phone'];
+            $bankAccount->wallet_cd = $data['wallet_type'];
 
             $bankAccount->save();
 

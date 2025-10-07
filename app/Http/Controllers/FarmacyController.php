@@ -6,6 +6,8 @@ use App\Models\CodesTb;
 use App\Models\customer;
 use App\Models\Employee;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controller; // ← استخدم Controller الأصلي من Laravel
+
 
 class FarmacyController extends Controller
 {

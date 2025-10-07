@@ -77,8 +77,8 @@
                                                 <td>{{ $index + 1 }}</td>
                                                 <td>{{ $detail->product->name ?? '-' }}</td>
                                                 <td>{{ $detail->quantity }}</td>
+                                                <td>{{ number_format((($detail->price)/$detail->quantity), 2) }}</td>
                                                 <td>{{ number_format($detail->price, 2) }}</td>
-                                                <td>{{ number_format($detail->quantity * $detail->price, 2) }}</td>
                                             </tr>
                                         @endforeach
                                     </tbody>

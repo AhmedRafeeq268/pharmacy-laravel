@@ -90,7 +90,7 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        window.location.href = `{{ route('salesReturns.printSalesReturnsExcel') }}?search=${encodeURIComponent(search)}`;
+        window.location.href = `{{ route('salesReturn.printSalesReturnsExcel') }}?search=${encodeURIComponent(search)}`;
     });
 
     exportPdfBtn.addEventListener('click', function () {
@@ -102,7 +102,7 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        window.location.href = `{{ route('salesReturns.printSalesReturnsPdf') }}?search=${encodeURIComponent(search)}`;
+        window.location.href = `{{ route('salesReturn.printSalesReturnsPdf') }}?search=${encodeURIComponent(search)}`;
     });
 });
 </script>

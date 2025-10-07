@@ -9,24 +9,24 @@ use App\Models\customer;
 use Illuminate\Http\Request;
 use App\Exports\CustomersExport;
 use function Laravel\Prompts\select;
+use Illuminate\Support\Facades\Gate;
+
 use Maatwebsite\Excel\Facades\Excel;
+use App\Http\Requests\StoreCustomerRequest;
+use App\Http\Requests\UpdateCustomerRequest;
 
 class customerController extends Controller
 {
-    // public function index(){
-    //     $customers = customer::orderBy('id', 'desc')->paginate(8);
-    //     return view('customer.index',['customers'=>$customers]);
-    // }
-
-        public function index(Request $request)
+    public function index(Request $request)
     {
+        abort_if(Gate::denies('view-customer'), 403);
         $search = $request->input('search');
 
         $customers = Customer::when($search, function ($query, $search) {
             $query->where('name', 'like', "%{$search}%")
             ->orWhere('id_card', 'like', "%{$search}%")
             ->orWhere('phone', 'like', "%{$search}%");
-        })->paginate(8); // حدد عدد العناصر في كل صفحة
+        })->orderBy('id', 'desc')->paginate(8); // حدد عدد العناصر في كل صفحة
 
         // إذا كان الطلب AJAX نعيد جزء الـ Table فقط
         if ($request->ajax()) {
@@ -89,88 +89,37 @@ class customerController extends Controller
     }
 
     public function show($id){
+        abort_if(Gate::denies('view-customer'), 403);
         $customer = customer::findOrFail($id);
         return view('customer.show',compact('customer'));
     }
 
 
     public function create(){
+        abort_if(Gate::denies('create-customer'), 403);
         $status = CodesTb::where('main_cd',9)->where('sub_cd', '>', 0)->get();
         return view('customer.create',compact('status'));
     }
 
 
-    public function store(){
-        // dd(request()->status);
-        request()->validate([
-            'name' => ['required'],
-            'phone' => ['required'],
-            'email' => ['required'],
-            'address' => ['required'],
-            'id_card' => ['required'],
-            'address_details' => ['required'],
-            'status_cd' => ['required'],
-        ]);
-
-        // $data = request()->all();
-        $name = request()->name;
-        $phone = request()->phone;
-        $email = request()->email;
-        $address = request()->address;
-        $id_card = request()->id_card;
-        $address_details = request()->address_details;
-        $status_cd = request()->status_cd;
-
-
-        customer::create([
-            'name'=>$name,
-            'phone'=>$phone,
-            'email'=>$email,
-            'address'=>$address,
-            'id_card'=>$id_card,
-            'status_cd'=>$status_cd,
-            'address_details'=>$address_details,
-        ]);
-        return to_route('customer.create')->with('success', __('messages.added'));
+    public function store(StoreCustomerRequest $request){
+        Customer::create($request->validated());
+        return to_route('customer.index')->with('success', __('messages.added'));
     }
 
     public function edit($id){
-        $customer=customer::findOrFail($id);
+        abort_if(Gate::denies('edit-customer'), 403);
+        $customer=Customer::findOrFail($id);
         $status = CodesTb::where('main_cd',9)->where('sub_cd', '>', 0)->get();
 
         return view('customer.edit',compact('customer','status'));
     }
 
-    public function update($id){
-        request()->validate([
-            'name' => ['required'],
-            'phone' => ['required'],
-            'email' => ['required'],
-            'address' => ['required'],
-            'id_card' => ['required'],
-            'address_details' => ['required'],
-            'status_cd' => ['required'],
-        ]);
+    public function update(UpdateCustomerRequest $request, $id){
 
-        $name = request()->name;
-        $phone = request()->phone;
-        $email = request()->email;
-        $address = request()->address;
-        $id_card = request()->id_card;
-        $address_details = request()->address_details;
-        $status_cd = request()->status_cd;
-        $customer = customer::findOrFail($id);
+        $customer = Customer::findOrFail($id);
+        $customer->update($request->validated());
 
-
-        $customer->update([
-            'name' => $name,
-            'phone' => $phone,
-            'email' => $email,
-            'address' => $address,
-            'id_card' => $id_card,
-            'address_details' => $address_details,
-            'status_cd' => $status_cd ,
-        ]);
         $page = request()->get('page', 1);
         return to_route('customer.index',['page' => $page])
         ->with('success', __('messages.updated'));

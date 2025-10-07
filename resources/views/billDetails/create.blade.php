@@ -3,233 +3,153 @@
 
 @section('content')
 @include('layouts.partials.sweet_alert')
-<!--Start Main content container-->
 <div class="main_content_container">
     <div class="main_container main_menu_open">
         <div class="page_content">
 
-            {{-- العنوان الرئيسي --}}
             <h3 class="heading_title text-center mb-4" style="margin-top: 90px;">
-
                 @lang('messages.billDetails.add_bill_details')
             </h3>
 
             {{-- معلومات الفاتورة --}}
             <h4 class="text-center text-primary mb-3">@lang('messages.billDetails.bill_info')</h4>
             <div class="table-responsive">
-                <table class="table table-bordered table-striped table-hover text-center">
-                    <thead class="table-light">
+                <table class="table table-bordered table-striped text-center">
+                    <thead>
                         <tr>
                             <th>@lang('messages.bill.total_amount')</th>
                             <th>@lang('messages.bill.currency_type')</th>
                             <th>@lang('messages.bill.bill_number')</th>
                             <th>@lang('messages.bill.bill_date')</th>
                             <th>@lang('messages.bill.receiving_employee')</th>
-
                         </tr>
                     </thead>
                     <tbody>
                         @foreach ($bills as $bill)
-                            <tr>
-                                <td>{{ $bill->total_amount }}</td>
-                                <td>{{ $bill->currancy_type }}</td>
-                                <td>{{ $bill->bill_number }}</td>
-                                <td>{{ date('d-m-Y', strtotime($bill->bill_date))}}</td>
-                                <td>{{ $bill->employee_receipt }}</td>
-
-                            </tr>
+                        <tr>
+                            <td>{{ $bill->total_amount }}</td>
+                            <td>{{ $bill->currancy_type }}</td>
+                            <td>{{ $bill->bill_number }}</td>
+                            <td>{{ date('d-m-Y', strtotime($bill->bill_date)) }}</td>
+                            <td>{{ $bill->employee_receipt }}</td>
+                        </tr>
                         @endforeach
                     </tbody>
                 </table>
             </div>
 
-            {{-- نموذج إدخال تفاصيل المنتج --}}
+            {{-- نموذج إدخال تفاصيل المنتجات --}}
             <h4 class="text-center text-success mt-5 mb-4">@lang('messages.billDetails.add_bill_details')</h4>
-            <form method="POST" action="{{ route('billDetails.store', ['billId' => request()->route('billId')]) }}">
+            <form method="POST" action="{{ route('billDetails.store', ['billId' => $billId]) }}">
                 @csrf
+                <input type="hidden" name="billId" value="{{ $billId }}">
 
-                <div class="row">
-                    <div class="col-md-3 mb-3">
-                        <label class="mb-2">@lang('messages.billDetails.product_id')</label>
-                        <select name="product_id" class="form-control">
-                            <option value="">@lang('messages.billDetails.product_id') - @lang('messages.billDetails.product_name')</option>
-                            @foreach ($products as $product)
-                                <option value="{{ $product->id }}" {{ old('product_id') == $product->id ? 'selected' : '' }}>
-                                    {{ $product->id }} - {{ $product->name }}
-                                </option>
-                            @endforeach
-                        </select>
-
-                        {{-- <input type="text" class="form-control" name="product_name" value="{{ old('product_name') }}" placeholder="@lang('messages.billDetails.product_name')"> --}}
-                        @error('product_id') <small class="text-danger">{{ $message }}</small> @enderror
-                    </div>
-
-                    <div class="col-md-3 mb-3">
-                        <label class="mb-2">@lang('messages.billDetails.product_category')</label>
-                        <select name="product_category" class="form-control">
-                            <option value="">@lang('messages.billDetails.select_category')</option>
-                            @foreach ($ProductCategories as $category)
-                                <option value="{{ $category->name }}" {{ old('product_category') == $category->name ? 'selected' : '' }}>
-                                    {{ $category->name }}
-                                </option>
-                            @endforeach
-                        </select>
-                        @error('product_category') <small class="text-danger">{{ $message }}</small> @enderror
-                    </div>
-
-                    <div class="col-md-6 mb-3">
-                        <label class="mb-2">@lang('messages.billDetails.product_description')</label>
-                        <textarea name="product_data" class="form-control" rows="1" placeholder="@lang('messages.billDetails.product_description')">{{ old('product_data') }}</textarea>
-                        @error('product_data') <small class="text-danger">{{ $message }}</small> @enderror
-                    </div>
+                <div class="table-responsive">
+                    <table class="table table-bordered text-center" id="itemsTable">
+                        <thead class="table-light">
+                            <tr>
+                                <th>@lang('messages.billDetails.product_id')</th>
+                                {{-- <th>@lang('messages.billDetails.product_category')</th> --}}
+                                <th>@lang('messages.billDetails.quantity')</th>
+                                <th>@lang('messages.billDetails.cost')</th>
+                                <th>@lang('messages.billDetails.discount')</th>
+                                <th>@lang('messages.billDetails.total')</th>
+                                <th>تاريخ الإنتاج</th>
+                                <th>تاريخ الانتهاء</th>
+                                <th>المصنع</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <select name="product_id[]" class="form-control">
+                                        <option value="">اختر المنتج</option>
+                                        @foreach ($products as $product)
+                                        <option value="{{ $product->id }}">{{ $product->id }} - {{ $product->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </td>
+                                {{-- <td>
+                                    <select name="product_category[]" class="form-control">
+                                        <option value="">@lang('messages.billDetails.select_category')</option>
+                                        @foreach ($ProductCategories as $category)
+                                        <option value="{{ $category->name }}">{{ $category->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </td> --}}
+                                <td><input type="number" name="quantity[]" class="form-control quantity" min="1"></td>
+                                <td><input type="number" name="cost[]" class="form-control cost" min="0" step="0.01"></td>
+                                <td><input type="number" name="discount[]" class="form-control discount" value="0" min="0" step="0.01"></td>
+                                <td><input type="number" name="total[]" class="form-control total" readonly></td>
+                                <td><input type="date" name="production_date[]" class="form-control"></td>
+                                <td><input type="date" name="exp_date[]" class="form-control"></td>
+                                <td><input type="text" name="manufacture[]" class="form-control"></td>
+                                <td><button type="button" class="btn btn-danger btn-sm removeRow">X</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
 
-                <div class="row">
-                    <div class="col-md-3 mb-3">
-                        <label class="mb-2">@lang('messages.billDetails.quantity')</label>
-                        <input type="number" class="form-control" name="quantity" id="quantity" value="{{ old('quantity') }}" placeholder="@lang('messages.billDetails.quantity')">
-                        @error('quantity') <small class="text-danger">{{ $message }}</small> @enderror
-                    </div>
-
-                    <div class="col-md-3 mb-3">
-                        <label class="mb-2">@lang('messages.billDetails.cost')</label>
-                        <input type="number" class="form-control" name="cost" id="cost" value="{{ old('cost') }}" placeholder="@lang('messages.billDetails.cost')">
-                        @error('cost') <small class="text-danger">{{ $message }}</small> @enderror
-                    </div>
-
-                    <div class="col-md-3 mb-3">
-                        <label class="mb-2">@lang('messages.billDetails.discount')</label>
-                        <input type="number" class="form-control" name="discount" id="discount" value="{{ old('discount') }}" placeholder="@lang('messages.billDetails.discount')">
-                        @error('discount') <small class="text-danger">{{ $message }}</small> @enderror
-                    </div>
-
-                    <div class="col-md-3 mb-3">
-                        <label class="mb-2">@lang('messages.billDetails.total')</label>
-                        <input type="number" class="form-control" name="total" id="total" value="{{ old('total') }}" placeholder="@lang('messages.billDetails.total')" readonly>
-                        @error('total') <small class="text-danger">{{ $message }}</small> @enderror
-                    </div>
-
-                    <div class="">
-                        <input type="hidden" name="billId" value="{{ $billId }}">
-
-                    </div>
-                </div>
-
-                <div class=" mt-3">
-                    <button type="submit" class="btn btn-success me-2">@lang('messages.save')</button>
-                    {{-- <a href="{{ route('bill.create') }}" class="btn btn-info">@lang('messages.billDetails.finished_entry')</a> --}}
-                    {{-- <a href="{{ route('billDetails.print', ['billId' => $bill_id]) }}" class="btn btn-info" target="_blank">
-                        @lang('messages.billDetails.finished_entry')
-                    </a> --}}
-                    {{-- <a href="{{ route('billDetails.close', ['billId' => $billId]) }}" class="btn btn-info">
-                        @lang('messages.billDetails.finished_entry')
-                    </a> --}}
+                <button type="button" id="addRow" class="btn btn-secondary mb-3">+ إضافة صف</button>
+                <div class="mt-3">
+                    <button type="submit" class="btn btn-success">@lang('messages.save')</button>
                     <button type="button" id="finishBillBtn" class="btn btn-outline-info">
                         @lang('messages.billDetails.finished_entry')
                     </button>
-
-
                 </div>
             </form>
-
-            {{-- جدول تفاصيل الفاتورة --}}
-            <h4 class="text-center text-dark mt-5 mb-3">@lang('messages.billDetails.bill_items_list')</h4>
-            <div class="table-responsive">
-                <table class="table table-bordered table-striped table-hover text-center">
-                    <thead class="table-light">
-                        <tr>
-                            <th>#</th>
-                            <th>@lang('messages.billDetails.bill_id')</th>
-                            <th>@lang('messages.billDetails.product_name')</th>
-                            <th>@lang('messages.billDetails.product_category')</th>
-                            <th>@lang('messages.billDetails.product_description')</th>
-                            <th>@lang('messages.billDetails.quantity')</th>
-                            <th>@lang('messages.billDetails.cost')</th>
-                            <th>@lang('messages.billDetails.total')</th>
-                            <th>@lang('messages.billDetails.discount')</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @php $id = 1; @endphp
-                        @foreach ($billDetails as $billDetail)
-                            <tr>
-                                <td>{{ $id++ }}</td>
-                                <td>{{ $billDetail->bill_id }}</td>
-                                <td>{{ $billDetail->product_name }}</td>
-                                <td>{{ $billDetail->product_category }}</td>
-                                <td>{{ $billDetail->product_data }}</td>
-                                <td>{{ $billDetail->quantity }}</td>
-                                <td>{{ $billDetail->cost }}</td>
-                                <td>{{ $billDetail->total }}</td>
-                                <td>{{ $billDetail->discount }}</td>
-                                <td>
-                                    <div class="d-flex justify-content-center gap-2">
-                                        <a href="#" class="btn btn-info btn-sm">@lang('messages.view')</a>
-                                        <a href="{{ route('billDetails.edit',$billDetail->id) }}" class="btn btn-primary btn-sm">@lang('messages.edit')</a>
-                                        <form action="{{ route('billDetails.destroy',$billDetail->id) }}" method="POST" onsubmit="return confirm('@lang('messages.confirm_delete')')" style="display:inline;">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-danger btn-sm">@lang('messages.delete')</button>
-                                        </form>
-                                    </div>
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
 
         </div>
     </div>
 </div>
-<!--/End Main content container-->
+
 @endsection
 
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        // const quantityInput = document.querySelector('input[name="quantity"]');
-        // const costInput = document.querySelector('input[name="cost"]');
-        const totalInput = document.getElementById('total');
-        const quantityInput = document.getElementById('quantity');
-        const costInput = document.getElementById('cost');
-        const discountInput = document.getElementById('discount');
+document.addEventListener('DOMContentLoaded', function () {
+    function calculateRow(row) {
+        const quantity = parseFloat(row.querySelector('.quantity').value) || 0;
+        const cost = parseFloat(row.querySelector('.cost').value) || 0;
+        const discount = parseFloat(row.querySelector('.discount').value) || 0;
+        const total = (quantity * cost) - discount;
+        row.querySelector('.total').value = total.toFixed(2);
+    }
 
-        function calculateTotal() {
-            const quantity = parseFloat(quantityInput.value) || 0;
-            const cost = parseFloat(costInput.value) || 0;
-            const discount = parseFloat(discountInput.value) || 0;
-            const total = quantity * cost -discount;
-            totalInput.value = total.toFixed(2); // أو بدون toFixed() حسب الحاجة
+    document.querySelector('#itemsTable').addEventListener('input', function (e) {
+        if (e.target.classList.contains('quantity') ||
+            e.target.classList.contains('cost') ||
+            e.target.classList.contains('discount')) {
+            calculateRow(e.target.closest('tr'));
         }
-
-        quantityInput.addEventListener('input', calculateTotal);
-        costInput.addEventListener('input', calculateTotal);
-        discountInput.addEventListener('input', calculateTotal);
-
-        // حساب أولي عند تحميل الصفحة لو هناك قيم مسبقة
-        calculateTotal();
-
-
-
     });
 
-   document.addEventListener('DOMContentLoaded', function () {
+    document.getElementById('addRow').addEventListener('click', function () {
+        const tableBody = document.querySelector('#itemsTable tbody');
+        const newRow = tableBody.querySelector('tr').cloneNode(true);
+        newRow.querySelectorAll('input, select').forEach(input => input.value = '');
+        tableBody.appendChild(newRow);
+    });
+
+    document.querySelector('#itemsTable').addEventListener('click', function (e) {
+        if (e.target.classList.contains('removeRow')) {
+            const row = e.target.closest('tr');
+            if (document.querySelectorAll('#itemsTable tbody tr').length > 1) {
+                row.remove();
+            }
+        }
+    });
+
     const finishBtn = document.getElementById('finishBillBtn');
-    const printUrl = "{{ route('bill.print', ['billId' => $billId]) }}";
+    const printUrl = "{{ route('billDetails.print', ['billId' => $billId]) }}";
     const closeUrl = "{{ route('billDetails.close', ['billId' => $billId]) }}";
 
     finishBtn.addEventListener('click', function () {
-        const userConfirmed = confirm("هل تريد طباعة الفاتورة؟");
-
-        if (userConfirmed) {
-            // الانتقال إلى صفحة الطباعة في نفس النافذة
+        if (confirm("هل تريد طباعة الفاتورة؟")) {
             window.location.href = printUrl;
         } else {
-            // الانتقال مباشرةً لصفحة إضافة فاتورة جديدة
             window.location.href = closeUrl;
         }
     });
 });
-
 </script>

@@ -35,25 +35,32 @@
                         {{-- زر العرض --}}
                         <a href="{{ route('bill.show',['bill'=>$bill->id]) }}" class="btn btn-info btn-sm">@lang('messages.view')</a>
 
-                        {{-- زر التعديل --}}
-                        <a href="{{ route('bill.edit', ['bill' => $bill->id, 'page' => request()->get('page')]) }}"
-                        class="btn btn-primary btn-sm">@lang('messages.edit')</a>
+                        @can('edit-purchase-bill')
+                            {{-- زر التعديل --}}
+                            <a href="{{ route('bill.edit', ['bill' => $bill->id, 'page' => request()->get('page')]) }}"
+                            class="btn btn-primary btn-sm">@lang('messages.edit')</a>
 
-                        {{-- زر الحذف --}}
-                        <form action="{{ route('bill.destroy', ['bill' => $bill->id, 'page' => request()->get('page')]) }}"
-                            method="POST"
-                            onsubmit="return confirm('@lang('messages.confirm_delete')')"
-                            class="d-inline-block m-0 p-0">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="btn btn-danger btn-sm">@lang('messages.delete')</button>
-                        </form>
+                        @endcan
 
-                        {{-- زر اعتماد الفاتورة --}}
-                        <a href="{{ route('billCertified.index', ['billId' => $bill->id, 'page' => request()->get('page')]) }}"
-                        class="btn btn-success btn-sm">
-                        @lang('messages.bill.certified')
-                        </a>
+                        @can('delete-purchase-bill')
+                            {{-- زر الحذف --}}
+                            <form action="{{ route('bill.destroy', ['bill' => $bill->id, 'page' => request()->get('page')]) }}"
+                                method="POST"
+                                onsubmit="return confirm('@lang('messages.confirm_delete')')"
+                                class="d-inline-block m-0 p-0">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn btn-danger btn-sm">@lang('messages.delete')</button>
+                            </form>
+                        @endcan
+
+                        @can('certified-purchase-bill')
+                            {{-- زر اعتماد الفاتورة --}}
+                            <a href="{{ route('billCertified.index', ['billId' => $bill->id, 'page' => request()->get('page')]) }}"
+                            class="btn btn-success btn-sm">
+                            @lang('messages.bill.certified')
+                            </a>
+                        @endcan
 
                     </div>
                 </td>

@@ -1,5 +1,11 @@
-<h1>Welcome, {{ Auth::user()->name }}</h1>
-<form method="POST" action="{{ route('logout') }}">
-    @csrf
-    <button type="submit">Logout</button>
-</form>
+@php
+    $user = auth()->user();
+@endphp
+
+@if($user->hasRole('admin'))
+    <p>مرحباً أيها المدير!</p>
+@endif
+
+@if($user->hasPermission('edit articles'))
+    <button>تعديل المقال</button>
+@endif

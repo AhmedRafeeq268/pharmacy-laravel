@@ -21,15 +21,29 @@ class AuthController extends Controller
             'password' => ['required'],
         ]);
 
+        // محاولة تسجيل الدخول
         if (Auth::attempt($credentials)) {
+            $user = Auth::user(); // جلب بيانات المستخدم بعد التحقق
+
+            // فحص حالة المستخدم
+            if ($user->status == 0) {
+                Auth::logout(); // تسجيل الخروج مباشرة
+                return back()->withErrors([
+                    'email' => 'حسابك غير مفعل.', // رسالة الخطأ للمستخدم
+                ]);
+            }
+
+            // إذا كان مفعل، تسجيل الدخول عادي
             $request->session()->regenerate();
-            return redirect()->intended('farmacy'); // Change as needed
+            return redirect()->intended('farmacy');
         }
 
+        // في حال كانت البيانات خاطئة
         return back()->withErrors([
-            'email' => 'Invalid credentials.',
+            'email' => 'البريد الإلكتروني أو كلمة المرور غير صحيحة.',
         ]);
     }
+
 
     public function showRegister()
     {

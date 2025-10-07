@@ -98,58 +98,6 @@
 
 @push('scripts')
 <script>
-    // document.addEventListener("DOMContentLoaded", function () {
-    //     // تفعيل/تعطيل حالة "مفعل"
-    //     const btnActive = document.getElementById('toggleActiveBtn');
-    //     const inputActive = document.getElementById('is_active_input');
-
-    //     btnActive.addEventListener('click', function () {
-    //         const isActive = inputActive.value === '1';
-    //         inputActive.value = isActive ? '0' : '1';
-    //         btnActive.classList.toggle('btn-success', !isActive);
-    //         btnActive.classList.toggle('btn-secondary', isActive);
-    //         btnActive.textContent = isActive ? '{{ __('messages.codesTb.active') }}' : '{{ __('messages.codesTb.inactive') }}';
-    //     });
-
-    //     // تفعيل/تعطيل "قابل للتعديل"
-    //     const btnEditable = document.getElementById('toggleEditableBtn');
-    //     const inputEditable = document.getElementById('is_editables_input');
-
-    //     btnEditable.addEventListener('click', function () {
-    //         const isEditable = inputEditable.value === '1';
-    //         inputEditable.value = isEditable ? '0' : '1';
-    //         btnEditable.classList.toggle('btn-success', !isEditable);
-    //         btnEditable.classList.toggle('btn-secondary', isEditable);
-    //         btnEditable.textContent = isEditable ? '{{ __('messages.codesTb.editable') }}' : '{{ __('messages.codesTb.not_editable') }}';
-    //     });
-
-
-
-    //     // التحكم بعرض حقل التصنيف الأب
-    //     const mainStatusCheckbox = document.getElementById('main_status_checkbox');
-    //     const fatherInput = document.getElementById('father_input');
-    //     const fatherSelect = document.getElementById('father_select');
-
-    //     function updateFatherInputState() {
-    //         if (mainStatusCheckbox.checked) {
-    //             // تصنيف رئيسي: اخفاء الحقلين
-    //             fatherInput.style.display = 'none';
-    //             fatherInput.value = '';
-
-    //             fatherSelect.style.display = 'none';
-    //             fatherSelect.value = '';
-    //         } else {
-    //             // تصنيف فرعي: اظهار Dropdown وإخفاء input رقم
-    //             fatherInput.style.display = 'none';
-    //             fatherInput.value = '';
-
-    //             fatherSelect.style.display = 'block';
-    //         }
-    //     }
-
-    //     updateFatherInputState();
-    //     mainStatusCheckbox.addEventListener('change', updateFatherInputState);
-    // });
 
     document.addEventListener("DOMContentLoaded", function () {
     // تفعيل/تعطيل حالة "مفعل"

@@ -15,9 +15,9 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('customer_id')->nullable();
             $table->unsignedBigInteger('employee_id')->nullable();
-            $table->integer('total_amount');
+            $table->decimal('total_amount', 10, 2)->default(0);
             $table->integer('discount');
-            $table->integer('net_amount');
+            $table->decimal('net_amount', 10, 2)->default(0);
             $table->string('payment_status')->nullable();
             // $table->tinyInteger('is_closed_with_cashbox')->default(0);
             $table->unsignedBigInteger('finished_by')->nullable();

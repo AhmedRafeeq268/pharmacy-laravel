@@ -4,114 +4,114 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use App\Models\Employee;
-// use App\Models\PurchaseBill;
+use App\Models\BalanceStore;
 use Illuminate\Http\Request;
 use App\Models\LastBillInsert;
 use App\Models\PurchasesBills;
 use App\Models\ProductCategory;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use App\Models\PurchasesBillsDetails;
+use App\Http\Requests\StorePurchaseBillDetailsRequest;
+use App\Http\Requests\UpdatePurchaseBillDetailsRequest;
 
 class PurchasesBillsDetailsController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        // $bills=PurchasesBills::where('id',$billId)->get();
-
+        abort_if(Gate::denies('view-purchase-bill-details'), 403);
         return view('bill.index');
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create(Request $request)
     {
-        // $employees=Employee::get('name','id');
-        $ProductCategories=ProductCategory::get('name');
-        // $billId = LastBillInsert::max('id_last_bill');
-        // if($billId == 0){
-        //     $billId++;
-        // }
-
-
-         $billId = $request->route('billId');
+        abort_if(Gate::denies('create-purchase-bill-details'), 403);
+        $ProductCategories = ProductCategory::get('name');
+        $billId = $request->route('billId');
 
         $billDetails = PurchasesBillsDetails::where('bill_id', $billId)->get();
-        $bills=PurchasesBills::where('id',$billId)->get();
+        $bills = PurchasesBills::where('id', $billId)->get();
         $products = Product::get(['id', 'name']);
 
-        return view('billDetails.create',compact('ProductCategories','billDetails','billId','bills','products'));
+        return view('billDetails.create', compact('ProductCategories', 'billDetails', 'billId', 'bills', 'products'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function store(StorePurchaseBillDetailsRequest $request)
     {
-        $validated = $request->validate([
-            "product_id" => 'required|exists:products,id',
-            "product_data" => 'required|string|max:255',
-            "quantity" => 'required|integer|min:1',
-            "cost" => 'required|numeric|min:0',
-            "total" => 'required|numeric|min:0',
-            "discount" => 'nullable|numeric|min:0',
-            "product_category" => 'required|string|max:255',
-            "billId" => 'required|exists:purchases_bills,id',
-        ]);
-
-        $product = Product::findOrFail($validated['product_id']);
-        $billId = $validated['billId'];
+        $validated = $request->validated();
+        $billId  = $validated['billId'];
 
         DB::beginTransaction();
         try {
-            // إنشاء تفاصيل الفاتورة
-            PurchasesBillsDetails::create([
-                'bill_id' => $billId,
-                'product_id' => $product->id,
-                'product_name' => $product->name,
-                'product_category' => $validated['product_category'],
-                'product_data' => $validated['product_data'],
-                'quantity' => $validated['quantity'],
-                'cost' => $validated['cost'],
-                'total' => $validated['total'],
-                'discount' => $validated['discount'] ?? 0,
-                'employee_id' => 3,  // تأكد من المستخدم المسجل
-            ]);
+            // نفترض أن جميع الحقول مصفوفات بنفس الطول
+            foreach ($validated['product_id'] as $index => $productId) {
+                $product = Product::findOrFail($productId);
+                $quantity = $validated['quantity'][$index];
+                $cost = $validated['cost'][$index];
+                $discount = $validated['discount'][$index] ?? 0;
+                $prodDate = $validated['production_date'][$index];
+                $expDate = $validated['exp_date'][$index];
+                $manufacture = $validated['manufacture'][$index];
+                // $productCategory = $validated['product_category'][$index];
 
-            // تحديث كمية المنتج في المخزون
-            $product->quantity = ($product->quantity ?? 0) + $validated['quantity'];
-            $product->save();
+                $total = ($quantity * $cost) - $discount;
 
-            // تحديث إجمالي الفاتورة
+                // إنشاء تفاصيل الفاتورة لكل منتج
+                PurchasesBillsDetails::create([
+                    'bill_id'          => $billId,
+                    'product_id'       => $product->id,
+                    'product_name'     => $product->name,
+                    'product_category' => $product->category_id,
+                    'product_data'     => $prodDate,
+                    'exp_date'         => $expDate,
+                    'manufacture'      => $manufacture,
+                    'quantity'         => $quantity,
+                    'cost'             => $cost,
+                    'total'            => $total,
+                    'discount'         => $discount,
+                    'employee_id'      => Auth::id(),
+                ]);
+
+                // تحديث كمية المنتج الإجمالية
+                $product->increment('quantity', $quantity);
+
+                // تحديث رصيد المخزن
+                $balance = BalanceStore::where('product_id', $product->id)
+                    ->where('production_date', $prodDate)
+                    ->where('exp_date', $expDate)
+                    ->where('manufacture', $manufacture)
+                    ->where('unity_price', $cost)
+                    ->first();
+
+                if ($balance) {
+                    $balance->increment('quantity', $quantity);
+                    $balance->increment('remaining_quantity', $quantity);
+                } else {
+                    BalanceStore::create([
+                        'product_id'         => $product->id,
+                        'product_name'       => $product->name,
+                        'production_date'    => $prodDate,
+                        'exp_date'           => $expDate,
+                        'manufacture'        => $manufacture,
+                        'unity_price'        => $cost,
+                        'quantity'           => $quantity,
+                        'remaining_quantity' => $quantity,
+                    ]);
+                }
+            }
+
+            // تحديث إجمالي الفاتورة بعد إضافة جميع المنتجات
             $totalAmount = PurchasesBillsDetails::where('bill_id', $billId)->sum('total');
             $bill = PurchasesBills::findOrFail($billId);
-
             $bill->total_amount = $totalAmount;
-
-            // التحقق من المدفوع والمستحق
-            if ($bill->paid > $totalAmount) {
-                $bill->paid = $totalAmount;
-            }
-            $bill->remaining = $totalAmount - $bill->paid;
-
-            // تحديث الحالة
-            if ($bill->remaining <= 0) {
-                $bill->status = 'paid';
-                $bill->remaining = 0;
-            } elseif ($bill->paid > 0) {
-                $bill->status = 'partial';
-            } else {
-                $bill->status = 'unpaid';
-            }
-
+            $bill->remaining = max(0, $totalAmount - $bill->paid);
+            $bill->status = $bill->remaining == 0 ? 'paid' : ($bill->paid > 0 ? 'partial' : 'unpaid');
             $bill->save();
 
             DB::commit();
             return redirect()->route('billDetails.create', ['billId' => $billId])
-                            ->with('success', __('messages.added'));
+                ->with('success', __('messages.added'));
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -120,43 +120,19 @@ class PurchasesBillsDetailsController extends Controller
     }
 
 
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(PurchasesBillsDetails $purchasesBillsDetails)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit($billDetailsId)
     {
-       // dd($_SERVER["HTTP_REFERER"]);
-        $ProductCategories=ProductCategory::get('name');
-        // $billId = PurchasesBillsDetails::where('id', $billDetailsId)->get('bill_id');
+        abort_if(Gate::denies('edit-purchase-bill-details'), 403);
+        $ProductCategories = ProductCategory::get('name');
         $billId = PurchasesBillsDetails::where('id', $billDetailsId)->value('bill_id');
         $billDetails = PurchasesBillsDetails::findOrFail($billDetailsId);
         $products = Product::get(['id', 'name']);
-        return view('billDetails.edit',compact('billDetails','ProductCategories','billId','products'));
+        return view('billDetails.edit', compact('billDetails', 'ProductCategories', 'billId', 'products'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-        public function update(Request $request, $billDetailsId)
+    public function update(UpdatePurchaseBillDetailsRequest $request, $billDetailsId)
     {
-        $validated = $request->validate([
-            "product_id" => 'required|exists:products,id',
-            "product_data" => 'required|string|max:255',
-            "quantity" => 'required|integer|min:1',
-            "cost" => 'required|numeric|min:0',
-            "total" => 'required|numeric|min:0',
-            "discount" => 'nullable|numeric|min:0',
-            "product_category" => 'required|string|max:255',
-        ]);
+        $validated = $request->validated();
 
         DB::beginTransaction();
         try {
@@ -166,105 +142,136 @@ class PurchasesBillsDetailsController extends Controller
 
             $product = Product::findOrFail($validated['product_id']);
 
-            // تعديل كمية المنتج في المخزون: طرح القديمة ثم إضافة الجديدة
-            $product->quantity = ($product->quantity - $oldQuantity) + $validated['quantity'];
-            if ($product->quantity < 0) {
-                // لا يمكن أن تكون الكمية بالسالب
+            $newQuantity = $product->quantity - $oldQuantity + $validated['quantity'];
+            if ($newQuantity < 0) {
                 throw new \Exception('الكمية في المخزون لا تكفي للتعديل.');
             }
-            $product->save();
+            $product->update(['quantity' => $newQuantity]);
 
-            // تحديث التفاصيل
+            $total = ($validated['quantity'] * $validated['cost']) - ($validated['discount'] ?? 0);
             $billDetails->update([
-                'product_id' => $product->id,
-                'product_name' => $product->name,
-                'product_category' => $validated['product_category'],
-                'product_data' => $validated['product_data'],
-                'quantity' => $validated['quantity'],
-                'cost' => $validated['cost'],
-                'total' => $validated['total'],
-                'discount' => $validated['discount'] ?? 0,
+                'product_id'       => $product->id,
+                'product_name'     => $product->name,
+                // 'product_category' => $validated['product_category'],
+                'product_data'     => $validated['prod_date'],
+                'exp_date'         => $validated['exp_date'],     // ✅ إضافة
+                'manufacture'      => $validated['manufacture'],  // ✅ إضافة
+                'quantity'         => $validated['quantity'],
+                'cost'             => $validated['cost'],
+                'total'            => $total,
+                'discount'         => $validated['discount'] ?? 0,
+                'employee_id'      => Auth::id(),
             ]);
 
-            // تحديث إجمالي الفاتورة بعد التعديل
             $totalAmount = PurchasesBillsDetails::where('bill_id', $billId)->sum('total');
             $bill = PurchasesBills::findOrFail($billId);
-
             $bill->total_amount = $totalAmount;
-
-            // تأكيد أن المدفوع لا يتجاوز المجموع
-            if ($bill->paid > $totalAmount) {
-                $bill->paid = $totalAmount;
-            }
-            $bill->remaining = $totalAmount - $bill->paid;
-
-            // تحديث الحالة
-            if ($bill->remaining <= 0) {
-                $bill->status = 'paid';
-                $bill->remaining = 0;
-            } elseif ($bill->paid > 0) {
-                $bill->status = 'partial';
-            } else {
-                $bill->status = 'unpaid';
-            }
-
+            $bill->remaining = max(0, $totalAmount - $bill->paid);
+            $bill->status = $bill->remaining == 0 ? 'paid' : ($bill->paid > 0 ? 'partial' : 'unpaid');
             $bill->save();
+
+            $oldBalance = BalanceStore::where('product_id', $billDetails->product_id)
+                ->where('prod_date', $billDetails->product_data)
+                ->where('exp_date', $billDetails->exp_date)
+                ->where('manufacture', $billDetails->manufacture)
+                ->where('unity_price', $billDetails->cost)
+                ->first();
+
+            if ($oldBalance) {
+                $oldBalance->decrement('quantity', $oldQuantity);
+                $oldBalance->decrement('remaining_quantity', $oldQuantity);
+            }
+
+            $newBalance = BalanceStore::where('product_id', $product->id)
+                ->where('prod_date', $validated['prod_date'])
+                ->where('exp_date', $validated['exp_date'])
+                ->where('manufacture', $validated['manufacture'])
+                ->where('unity_price', $validated['cost'])
+                ->first();
+
+            if ($newBalance) {
+                $newBalance->increment('quantity', $validated['quantity']);
+                $newBalance->increment('remaining_quantity', $validated['quantity']);
+            } else {
+                BalanceStore::create([
+                    'product_id'         => $product->id,
+                    'product_name'       => $product->name,
+                    'prod_date'          => $validated['prod_date'],
+                    'exp_date'           => $validated['exp_date'],
+                    'manufacture'        => $validated['manufacture'],
+                    'unity_price'        => $validated['cost'],
+                    'quantity'           => $validated['quantity'],
+                    'remaining_quantity' => $validated['quantity'],
+                ]);
+            }
 
             DB::commit();
             return redirect()->route('billDetails.create', ['billId' => $billId])
-                            ->with('success', __('messages.updated'));
+                ->with('success', __('messages.updated'));
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'حدث خطأ: ' . $e->getMessage());
         }
     }
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy($billDetailsId)
-{
-    $billDetails = PurchasesBillsDetails::find($billDetailsId);
 
-    $billId = $billDetails->bill_id;
-    if (!$billDetails)
-        {
+    public function destroy($billDetailsId)
+    {
+        $billDetails = PurchasesBillsDetails::find($billDetailsId);
+        if (!$billDetails) {
             return redirect()->back()->with('error', __('messages.not_found'));
         }
-    $billDetails->delete();
 
-     $totalAmount = PurchasesBillsDetails::where('bill_id', $billId)
-                    ->sum('total');
+        $billId = $billDetails->bill_id;
+        $product = Product::find($billDetails->product_id);
 
-    $bill = PurchasesBills::find($billId);
-    if ($bill) {
-        $bill->total_amount = $totalAmount;
-        if ($bill->paid > $totalAmount) {
-            $bill->paid = $totalAmount;
+        DB::beginTransaction();
+        try {
+            if ($product) {
+                $product->decrement('quantity', $billDetails->quantity);
+            }
+
+            $balance = BalanceStore::where('product_id', $billDetails->product_id)
+                ->where('prod_date', $billDetails->product_data)
+                ->where('exp_date', $billDetails->exp_date)
+                ->where('manufacture', $billDetails->manufacture)
+                ->where('unity_price', $billDetails->cost)
+                ->first();
+
+            if ($balance) {
+                $balance->decrement('quantity', $billDetails->quantity);
+                $balance->decrement('remaining_quantity', $billDetails->quantity);
+            }
+
+            $billDetails->delete();
+
+            $totalAmount = PurchasesBillsDetails::where('bill_id', $billId)->sum('total');
+            $bill = PurchasesBills::find($billId);
+            if ($bill) {
+                $bill->total_amount = $totalAmount;
+                $bill->paid = min($bill->paid, $totalAmount);
+                $bill->remaining = max(0, $totalAmount - $bill->paid);
+                $bill->status = $bill->remaining == 0 ? 'paid' : ($bill->paid > 0 ? 'partial' : 'unpaid');
+                $bill->save();
+            }
+
+            DB::commit();
+            return to_route('billDetails.create', ['billId' => $billId])
+                ->with('success', __('messages.deleted'));
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'حدث خطأ: ' . $e->getMessage());
         }
-        $bill->remaining = $totalAmount - $bill->paid;
-        if ($bill->remaining <= 0) {
-            $bill->status = 'paid';
-            $bill->remaining = 0;
-        } elseif ($bill->paid > 0) {
-            $bill->status = 'partial';
-        } else {
-            $bill->status = 'unpaid';
-        }
-        $bill->save();
     }
 
-    return to_route('billDetails.create', ['billId' => $billId])
-    ->with('success', __('messages.deleted'));
-}
-public function closeBill($billId)
-{
-    $bill = PurchasesBills::findOrFail($billId);
-    $bill->adopt_bill = 1;
-    $bill->save();
+    public function closeBill($billId)
+    {
+        $bill = PurchasesBills::findOrFail($billId);
+        $bill->adopt_bill = 1;
+        $bill->save();
 
-    return redirect()->route('bill.create')->with('success', __('messages.added'));;
-}
-
-
-
+        // ✅ رجع لعرض الفاتورة بدلاً من إنشاء جديدة
+        return redirect()->route('bill.create', ['billId' => $billId])
+            ->with('success', __('messages.added'));
+    }
 }

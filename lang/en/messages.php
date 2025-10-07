@@ -30,7 +30,8 @@ return[
         'damaged' => 'Damaged',
         'posReturns' => 'Customer Returns',
         'expenses' => 'Expenses',
-
+        'system_settings' => 'System Settings',
+        'users' => 'Users',
 
     ],
      'farmacy'=> [
@@ -97,6 +98,7 @@ return[
         'active' => 'active',
         'inActive' => 'InActive',
         'select_status' => 'Select Status',
+        'general_customer' => 'General Customer',
 
 
      ],
@@ -171,6 +173,7 @@ return[
         'barcode' => 'Barcode',
         'export_products' => 'Export Products Date',
         'quantity' =>'Quantity',
+        'import_products' => 'Import Products',
 
 
     ],
@@ -199,6 +202,7 @@ return[
         'status_partial' => 'Partially Paid',
         'status_unpaid' => 'Unpaid',
         'remaining' => 'Remaining Amount',
+        'net_amount' => 'Net Amount',
 
 
 
@@ -253,6 +257,7 @@ return[
         'pay_cash' => 'Pay Cash',
         'pay_visa' => 'Pay by Visa',
         'pay_debt' => 'Debt',
+        'not_enough_stock' => 'Not enough stock available',
 
 
     ],
@@ -411,6 +416,8 @@ return[
         'total' => 'Total',
         'no_debt' => 'There is no debt for this customer.',
         'total_remaining' => 'Total Remaining',
+        'pay_debt' => 'Pay Debt',
+
 
     ],
 
@@ -473,6 +480,7 @@ return[
         'total_profit' => 'Total Profit',
         'expenses' => 'Expenses',
         'damaged' => 'Damaged Items',
+        'discounts' => 'Total Discounts',
         'net_profit' => 'Net Profit',
         'product_profit_detail' => 'Product Profit Details',
         'product' => 'Product',
@@ -501,6 +509,60 @@ return[
         'Sheikh_nasser_pharmacy'=>'Sheikh Nasser Pharmacy',
         'address' => 'Address',
         'phone' => 'Phone',
+
+    ],
+
+    'admin'=>[
+        'users'=>'Users',
+        'search_user' => 'Search By User Name ',
+        'add_new_users' => 'Add New Users',
+        'name' => 'Name',
+        'email' => 'Email',
+        'password' => 'Password',
+        'password_confirmation' => 'password Confirmation',
+        'role' =>'Role',
+        'user' =>'User',
+        'admin'=>'Admin',
+        'show_users_table' => 'show Users Table',
+        'permissions_management' => 'Permissions Management',
+        'edit_user'   => 'Edit User',
+        'add_user'    => 'Add New User',
+        'delete_user' => 'Delete User',
+        'list_users'  => 'Users List',
+        'leave_blank_if_no_change' => 'Leave blank if no change',
+
+        'extra_permissions' => 'User Extra Permissions',
+        'name' => 'Name',
+        'email' => 'Email',
+        'role' => 'Role',
+        'select_permissions' => 'Select Extra Permissions',
+        'back_to_users' => 'Back to Users',
+
+        'edit_permission' => 'Edit Permission',
+
+    ],
+
+    'balanceStore'=>[
+        'search' =>'Search by product name and manufacture',
+        'title' => 'Balance Stores',
+    ],
+
+    'dashboard' => [
+        'title' => 'Dashboard',
+        'sales_today' => 'Sales Today',
+        'bills_today' => 'Bills Today',
+        'total_debts' => 'Total Open Debts',
+        'low_stock' => 'Low Stock',
+        'items' => 'items',
+        'recent_bills' => 'Latest 10 Bills',
+        'sales_last7days' => 'Sales in Last 7 Days',
+        'debts_by_customers' => 'Debts by Customers',
+        'sales' => 'Sales',
+        'debts' => 'Debts',
+        'data' => 'Date',
+        'customer' => 'Customer',
+        'remaining_amount' => 'Remaining Amount',
+
 
     ],
 
@@ -563,6 +625,7 @@ return[
 
     'export_excel' => ' Export to Excel ',
     'export_pdf' => 'Export to PDF',
+    'upload' => 'Upload File',
 
 
 

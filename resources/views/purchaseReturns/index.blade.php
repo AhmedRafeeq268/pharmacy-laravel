@@ -100,7 +100,7 @@
             return;
         }
 
-        window.location.href = `{{ route('PurchaseReturnController.printPurchaseReturnsPdf') }}?search=${encodeURIComponent(search)}`;
+        window.location.href = `{{ route('purchaseReturns.printPurchaseReturnsPdf') }}?search=${encodeURIComponent(search)}`;
     });
     });
 

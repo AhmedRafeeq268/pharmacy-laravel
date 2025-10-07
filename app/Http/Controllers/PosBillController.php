@@ -10,12 +10,14 @@ use App\Models\PosBill;
 use App\Models\Product;
 use App\Models\customer;
 use App\Models\PosSession;
+use App\Models\BalanceStore;
 use Illuminate\Http\Request;
 use App\Models\PosBillDetails;
 use App\Exports\PosBillsExport;
 use App\Models\CashBoxTransaction;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Maatwebsite\Excel\Facades\Excel;
 use Stripe\Exception\ApiErrorException;
 use App\Models\CashBoxTransactionSecond;
@@ -24,6 +26,7 @@ class PosBillController extends Controller
 {
     public function index(Request $request)
     {
+        abort_if(Gate::denies('view-pos-bill'), 403);
         $search = $request->input('search');
 
         $posBills = PosBill::with(['customer', 'employee'])
@@ -100,6 +103,7 @@ class PosBillController extends Controller
 
     public function create(Request $request, $pos_bill_id = null)
     {
+        abort_if(Gate::denies('create-pos-bill'), 403);
         $customers = customer::all(); // <-- اجلب العملاء دائماً
 
         $currentSession = PosSession::where('user_id', Auth::id())
@@ -121,7 +125,6 @@ class PosBillController extends Controller
         return view('pos.create',compact('customers','pos_bill_id','posBillsDetails','currentSession') );
     }
 
-
     public function store(Request $request, $pos_bill_id = null)
     {
         $request->validate([
@@ -135,7 +138,7 @@ class PosBillController extends Controller
 
         $user_id = Auth::id() ?? 1;
 
-        // الجلسة المفتوحة الحالية للصندوق
+        // الجلسة المفتوحة الحالية
         $currentSessionId = PosSession::where('user_id', $user_id)
                                     ->where('status', 'open')
                                     ->latest()
@@ -147,6 +150,15 @@ class PosBillController extends Controller
             return back()->with('error', __('messages.pos.product_not_found'));
         }
 
+        // تحقق من توفر الكمية
+        $availableStock = BalanceStore::where('product_id', $product->id)
+            ->sum('remaining_quantity');
+
+        if ($availableStock < $quantity) {
+            return back()->with('error', 'الكمية غير متوفرة بالمخزون');
+        }
+
+        // إنشاء فاتورة إذا مش موجودة
         if (!$pos_bill_id || !PosBill::find($pos_bill_id)) {
             $posBill = PosBill::create([
                 'total_amount' => 0,
@@ -161,24 +173,59 @@ class PosBillController extends Controller
         $unit_price = $product->price_sell;
         $price      = $unit_price * $quantity;
 
-        $costPrice = $product->unit_price;
-        $profit = ($unit_price - $costPrice) * $quantity;
+        // --- خصم FIFO وحساب التكلفة ---
+        $neededQty = $quantity;
+        $totalCost = 0;
+
+        // $balances = BalanceStore::where('product_id', $product->id)
+        //     ->where('remaining_quantity', '>', 0)
+        //     ->orderBy('production_date', 'asc')
+        //     ->get();
+
+        $balances = BalanceStore::where('product_id', $product->id)
+            ->where('remaining_quantity', '>', 0)
+            // ->whereDate('exp_date', '>=', now()) // استثناء المنتهية
+            ->orderBy('exp_date', 'asc') // FEFO
+            ->get();
+
+
+        foreach ($balances as $balance) {
+            if ($neededQty <= 0) break;
+
+            if ($balance->remaining_quantity >= $neededQty) {
+                $totalCost += $neededQty * $balance->unity_price;
+                $balance->remaining_quantity -= $neededQty;
+                $balance->save();
+                $neededQty = 0;
+            } else {
+                $totalCost += $balance->remaining_quantity * $balance->unity_price;
+                $neededQty -= $balance->remaining_quantity;
+                $balance->remaining_quantity = 0;
+                $balance->save();
+            }
+        }
+
+        // الربح = سعر البيع الكلي - التكلفة الحقيقية
+        $profit = $price - $totalCost;
+
+        // حفظ تفاصيل الفاتورة
         PosBillDetails::create([
             'pos_bill_id' => $pos_bill_id,
             'product_id'  => $product->id,
             'unit_price'  => $unit_price,
             'quantity'    => $quantity,
             'price'       => $price,
-            'cost_price'   => $costPrice,
-            'profit'       => $profit,
+            'cost_price'  => $totalCost,
+            'profit'      => $profit,
         ]);
 
+        // تحديث الفاتورة
         $total_amount = PosBillDetails::where('pos_bill_id', $pos_bill_id)->sum('price');
         $net_amount   = $total_amount - $discount;
 
         PosBill::where('id', $pos_bill_id)->update([
-            'customer_id' => 0,
-            'employee_id' => Auth::id(),
+            'customer_id'  => 0,
+            'employee_id'  => Auth::id(),
             'total_amount' => $total_amount,
             'discount'     => $discount,
             'net_amount'   => $net_amount,
@@ -186,8 +233,10 @@ class PosBillController extends Controller
         ]);
 
         return redirect()->route('pos.create', ['pos_bill_id' => $pos_bill_id])
-                         ->with('success', __('messages.added'));
+                        ->with('success', __('messages.added'));
     }
+
+
 
     public function fetchProduct($barcode)
     {

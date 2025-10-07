@@ -5,16 +5,21 @@ namespace App\Http\Controllers;
 use Mpdf\Mpdf;
 use App\Models\Product;
 use Illuminate\Http\Request;
-use App\Exports\PosBillsExport;
 use App\Exports\ProductsExport;
+use App\Imports\ProductsImport;
 use App\Models\ProductCategory;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Http\Requests\StoreProductRequest;
+use App\Http\Requests\UpdateProductRequest;
 
 class ProductController extends Controller
 {
 
     public function index(Request $request)
     {
+        abort_if(Gate::denies('view-product'), 403);
         $search = $request->input('search');
 
         $products = Product::with(['productCategory'])
@@ -82,11 +87,34 @@ class ProductController extends Controller
         return $mpdf->Output($filename, 'D');
     }
 
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls',
+        ]);
+
+        $import = new ProductsImport;
+
+        // استيراد الملف
+        Excel::import($import, $request->file('file'));
+
+        // التحقق من الأخطاء
+        if (!empty($import->errors)) {
+            $msg = implode('<br>', $import->errors);
+            return redirect()->back()->with('error', $msg);
+        }
+
+        return redirect()->back()->with('success', 'تم استيراد المنتجات بنجاح!');
+    }
+
+
+
     /**
      * Show the form for creating a new resource.
      */
     public function create()
     {
+        abort_if(Gate::denies('create-product'), 403);
          $productCategories = ProductCategory::select('id','name')->get();
         return view('product.create',compact('productCategories'));
     }
@@ -94,36 +122,9 @@ class ProductController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request){
-        request()->validate([
-            'name' => ['required'],
-            'barcode' => ['required'],
-            'manufacture_company' => ['required'],
-            'unit_price' => ['required'],
-            'price_sell' => ['required'],
-            'category_id' => ['required'],
-
-        ]);
-
-
-
-        // $data = request()->all();
-        $name = $request->name;
-        $barcode = $request->barcode;
-        $manufacture_company = $request->manufacture_company;
-        $unit_price = $request->unit_price;
-        $price_sell = $request->price_sell;
-        $category_id = $request->category_id;
-
-        Product::create([
-            'name'=>$name,
-            'barcode'=>$barcode,
-            'manufacture_company'=>$manufacture_company,
-            'unit_price'=>$unit_price,
-            'price_sell'=>$price_sell,
-            'category_id'=>$category_id,
-
-        ]);
+    public function store(StoreProductRequest $request){
+        $user  = Auth::user();
+        Product::create($request->validated());
         return to_route('product.create')->with('success', __('messages.added'));
     }
 
@@ -131,6 +132,7 @@ class ProductController extends Controller
      * Display the specified resource.
      */
      public function show($id){
+        abort_if(Gate::denies('view-product'), 403);
         $product = Product::with('productCategory')->findOrFail($id);
         return view('product.show',compact('product'));
     }
@@ -139,6 +141,7 @@ class ProductController extends Controller
      * Show the form for editing the specified resource.
      */
     public function edit($productId){
+        abort_if(Gate::denies('edit-product'), 403);
         $product=Product::findOrFail($productId);
          $productCategories = ProductCategory::select('id','name')->get();
 
@@ -148,34 +151,9 @@ class ProductController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request ,$productId){
-        request()->validate([
-            'name' => ['required'],
-            'barcode' => ['required'],
-            'manufacture_company' => ['required'],
-            'unit_price' => ['required'],
-            'price_sell' => ['required'],
-            'category_id' => ['required'],
-
-        ]);
-
-        // $data = request()->all();
-        $name = $request->name;
-        $barcode = $request->barcode;
-        $manufacture_company = $request->manufacture_company;
-        $unit_price = $request->unit_price;
-        $price_sell = $request->price_sell;
-        $category_id = $request->category_id;
-
+    public function update(UpdateProductRequest $request ,$productId){
         $product = Product::findOrFail($productId);
-        $product->update([
-            'name' => $name,
-            'barcode' => $barcode,
-            'manufacture_company' => $manufacture_company,
-            'unit_price' => $unit_price,
-            'price_sell' => $price_sell,
-            'category_id' => $category_id,
-        ]);
+        $product->update($request->validated());
         $page = $request->get('page', 1);
         return to_route('product.index',['page' => $page])
         ->with('success', __('messages.updated'));

@@ -18,12 +18,15 @@ use App\Exports\SalesReturnExport;
 use App\Models\CashBoxTransaction;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Http\Requests\StoreSalesReturnRequest;
 
 class SalesReturnController extends Controller
 {
     public function index(Request $request)
     {
+        abort_if(Gate::denies('edit-customer-return'), 403);
         $search = $request->input('search');
 
         $salesReturns = SalesReturn::with(['customer','details','bill'])
@@ -97,6 +100,7 @@ class SalesReturnController extends Controller
 
     public function create(Request $request)
     {
+        abort_if(Gate::denies('create-customer-return'), 403);
         $bill_id = $request->bill_id;
         $customers = Customer::all();
         $products = Product::all();
@@ -117,18 +121,10 @@ class SalesReturnController extends Controller
         return view('salesReturn.create', compact('customers', 'products', 'bill', 'billProducts', 'bill_id'));
     }
 
-    public function store(Request $request)
+    public function store(StoreSalesReturnRequest $request)
     {
         // ✅ التحقق من صحة البيانات
-        $data = $request->validate([
-            // 'customer_id' غير مطلوب لأنه ممكن تكون الفاتورة نقداً أو بطاقة
-            'refund_method'       => 'required|in:cash,debt',
-            'items'               => 'required|array|min:1',
-            'items.*.product_id'  => 'required|exists:products,id',
-            'items.*.price'       => 'required|numeric|min:0',
-            'items.*.quantity'    => 'required|integer|min:0',
-            'bill_id'             => 'nullable|exists:pos_bills,id',
-        ]);
+        $data = $request->validated();
 
         // ✅ استبعاد الأصناف ذات الكمية = 0
         $items = array_filter($data['items'], fn($i) => $i['quantity'] > 0);
@@ -323,6 +319,7 @@ class SalesReturnController extends Controller
     }
 
     public function show($id){
+        abort_if(Gate::denies('view-customer-return'), 403);
         $salesReturn = SalesReturn::with('customer','details','bill')->findOrFail($id);
         return view('salesReturn.show',compact('salesReturn'));
     }

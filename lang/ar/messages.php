@@ -30,7 +30,8 @@ return [
         'debts' => 'الديون',
         'posReturns' => 'مرتجعات الزبائن',
         'expenses' => 'النفقات',
-
+        'system_settings' => 'إعدادات النظام',
+        'users'=>'المستخدمين',
 
     ],
 
@@ -97,6 +98,7 @@ return [
         'active' => 'فعال',
         'inActive' => 'غير فعال',
         'select_status' => 'اختر الحالة',
+        'general_customer' => 'زبون عام',
 
      ],
 
@@ -168,6 +170,8 @@ return [
         'barcode' => 'رقم المنتج',
         'export_products' => 'طباعة بيانات المنتجات ',
         'quantity'=> 'الكمية',
+        'import_products' => 'استيراد المنتجات',
+
 
     ],
 
@@ -195,6 +199,7 @@ return [
         'status_partial' => 'مدفوعة جزئياً',
         'status_unpaid' => 'غير مدفوعة',
         'remaining' => 'المبلغ المتبقي',
+        'net_amount' => 'الصافي',
 
 
     ],
@@ -250,6 +255,7 @@ return [
         'pay_cash' => 'دفع نقداً',
         'pay_visa' => 'دفع بالفيزا',
         'pay_debt' => 'دين',
+        'not_enough_stock' => 'لا يوجد كمية كافية في المخزون',
 
 
 
@@ -407,6 +413,7 @@ return [
         'total' => 'الإجمالي',
         'no_debt' => 'لا توجد ديون لهذا الزبون.',
         'total_remaining' => 'إجمالي المبلغ المتبقي',
+        'pay_debt' => 'دفع دين',
 
     ],
 
@@ -472,6 +479,7 @@ return [
         'total_profit' => 'إجمالي الربح',
         'expenses' => 'المصروفات',
         'damaged' => 'المنتجات التالفة',
+        'discounts' => ' اجمالي الخصومات',
         'net_profit' => 'صافي الربح',
         'product_profit_detail' => 'تفاصيل ربح المنتجات',
         'product' => 'المنتج',
@@ -501,6 +509,61 @@ return [
         'phone' => 'الهاتف',
     ],
 
+    'admin'=>[
+        'users'=>'المستخدمين',
+        'search_user' => 'ابحث باستخدام اسم المستخدم',
+        'add_new_users' => 'إضافة مستخدم جديدة',
+        'name' => 'الاسم',
+        'email' => 'البريد الالكتروني',
+        'password' => 'كلمة المرور',
+        'password_confirmation' => 'تاكيد كلمة المرور ',
+        'role' =>'الدور',
+        'user' =>'مستخدم',
+        'admin'=>'مسؤول',
+        'show_users_table' => 'عرض جدول المستخدمين',
+        'permissions_management' => 'إدارة الصلاحيات',
+        'edit_user'   => 'تعديل المستخدم',
+        'add_user'    => 'إضافة مستخدم جديد',
+        'delete_user' => 'حذف المستخدم',
+        'list_users'  => 'قائمة المستخدمين',
+        'leave_blank_if_no_change' => 'اتركه فارغًا إذا لم ترغب في التغيير',
+
+        'extra_permissions' => 'الصلاحيات الإضافية للمستخدم',
+        'name' => 'اسم المستخدم',
+        'email' => 'البريد الإلكتروني',
+        'role' => 'الدور',
+        'select_permissions' => 'اختر الصلاحيات الإضافية',
+        'back_to_users' => 'رجوع لقائمة المستخدمين',
+
+        'edit_permission' => 'تعديل الصلاحيات',
+
+
+
+    ],
+
+    'balanceStore'=>[
+        'search' =>'ابحث باستخدام اسم المنتج او اسم الشركة المصنعة',
+        'title' =>'رصيد المخازن',
+    ],
+
+    'dashboard' => [
+        'title' => 'لوحة التحكم',
+        'sales_today' => 'إجمالي المبيعات اليوم',
+        'bills_today' => 'عدد الفواتير اليوم',
+        'total_debts' => 'إجمالي الديون المفتوحة',
+        'low_stock' => 'المخزون المنخفض',
+        'items' => 'صنف',
+        'recent_bills' => 'آخر 10 فواتير',
+        'sales_last7days' => 'المبيعات خلال آخر 7 أيام',
+        'debts_by_customers' => 'الديون حسب العملاء',
+        'sales' => 'المبيعات',
+        'debts' => 'الديون',
+        'date' => 'التاريخ',
+        'customer' => 'الزبون',
+        'remaining_amount' => 'المبلغ المتبقي',
+
+    ],
+
 
 
     'localization' => 'ar',
@@ -515,7 +578,7 @@ return [
      'employees' => 'الموظفين',
      'customers' => 'الزبائن',
      'damage' => 'التوالف',
-     'debts' => 'الديون',
+     'debt' => 'الديون',
      'confirm_delete' => 'هل أنت متأكد أنك تريد الحذف؟',
      'no_results_found' => 'لا توجد بيانات لعرضها',
      'added' => 'تمت الإضافة بنجاح',
@@ -560,6 +623,8 @@ return [
 
     'export_excel' => 'تصدير الى اكسل ',
     'export_pdf' => 'تصدير بدي اف',
+    'upload' => 'رفع الملف',
+
 
 
 ];

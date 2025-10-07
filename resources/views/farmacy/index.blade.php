@@ -5,13 +5,7 @@
     <!--Start Main content container-->
     <div class="main_content_container">
         <div class="main_container  main_menu_open">
-            <!--Start system bath-->
-            <div class="home_pass hidden-xs">
-                <ul>
-                    <li class="bring_right"><span class="glyphicon glyphicon-home "></span></li>
-                    <li class="bring_right"><a href="">الصفحة الرئيسية للوحة تحكم الموقع</a></li>
-                </ul>
-            </div>
+
             <!--/End system bath-->
             <div class="page_content">
                 <div class="page_content">

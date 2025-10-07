@@ -53,6 +53,10 @@
                 <div id="debtTable">
                     @include('debts._table', ['debts' => $debts])
                 </div>
+
+                <div class="quick_links text-center">
+                    <a href="{{ route('debts.searchForm') }}" class="btn text-white py-3" style="background-color: #d35400"> <h6 class="mb-0 text-white">@lang('messages.debts.pay_debt')</h6> </a>
+                </div>
             </div>
         </div>
         <!--/End Main content container-->

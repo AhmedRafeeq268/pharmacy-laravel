@@ -10,7 +10,10 @@ use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Exports\DamagedItemsExport;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Http\Requests\StoreDamagedItemRequest;
+use App\Http\Requests\UpdateDamagedItemRequest;
 
 class DamagedItemController extends Controller
 {
@@ -19,6 +22,7 @@ class DamagedItemController extends Controller
      */
     public function index(Request $request)
     {
+        abort_if(Gate::denies('view-damaged-item'), 403);
         $search = $request->input('search');
 
         $damagedItems = DamagedItem::with(['product'])
@@ -94,6 +98,7 @@ class DamagedItemController extends Controller
      */
     public function create()
     {
+        abort_if(Gate::denies('create-damaged-item'), 403);
         $products = Product::all();
         return view('damaged.create', compact('products'));
     }
@@ -101,13 +106,9 @@ class DamagedItemController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreDamagedItemRequest $request)
     {
-        $data = $request->validate([
-            'product_id' => 'required|exists:products,id',
-            'quantity' => 'required|integer|min:1',
-            'reason' => 'required|string|max:255',
-        ]);
+        $data = $request->validated();
 
         $product = Product::findOrFail($data['product_id']);
 
@@ -115,9 +116,7 @@ class DamagedItemController extends Controller
             return back()->withErrors(['quantity' => 'الكمية المدخلة أكبر من الكمية المتوفرة.']);
         }
 
-        // خصم الكمية
-        $product->quantity -= $data['quantity'];
-        $product->save();
+        $product->decrement('quantity', $data['quantity']);
 
         $user_id = Auth::id() ?? 1;
 
@@ -126,22 +125,21 @@ class DamagedItemController extends Controller
                                     ->latest()
                                     ->value('id');
 
-        // تحقق أن هناك جلسة مفتوحة
         if (!$currentSessionId) {
             return back()->withErrors(['session' => 'لا توجد جلسة مفتوحة حالياً.']);
         }
 
-        // حفظ التالف
         DamagedItem::create([
-            'product_id' => $product->id,
-            'quantity' => $data['quantity'],
-            'reason' => $data['reason'],
+            'product_id'  => $product->id,
+            'quantity'    => $data['quantity'],
+            'reason'      => $data['reason'],
             'reported_by' => $user_id,
-            'session_id' => $currentSessionId,
+            'session_id'  => $currentSessionId,
         ]);
 
         return redirect()->back()->with('success', 'تم تسجيل التالف بنجاح.');
     }
+
 
 
     /**
@@ -149,6 +147,7 @@ class DamagedItemController extends Controller
      */
     public function show($damagedItemID )
     {
+        abort_if(Gate::denies('view-damaged-item'), 403);
         $damagedItem = DamagedItem::findOrFail($damagedItemID);
         return view('damaged.show',compact('damagedItem'));
     }
@@ -157,65 +156,50 @@ class DamagedItemController extends Controller
      * Show the form for editing the specified resource.
      */
      public function edit($id){
+        abort_if(Gate::denies('edit-damaged-item'), 403);
         $damagedItem=DamagedItem::findOrFail($id);
         $products = Product::select('id','name')->get();
         return view('damaged.edit',compact('damagedItem','products'));
     }
 
-    public function update($id)
+    public function update(UpdateDamagedItemRequest $request, $id)
     {
-        request()->validate([
-            'product_id' => ['required'],
-            'quantity' => ['required', 'numeric', 'min:1'],
-            'reason' => ['required'],
-        ]);
+        $data = $request->validated();
 
         $damagedItem = DamagedItem::findOrFail($id);
 
-        // الكمية القديمة من السجل
         $oldQuantity = $damagedItem->quantity;
 
-        // الكمية الجديدة المطلوبة
-        $newQuantity = request()->quantity;
+        $newQuantity = $data['quantity'];
 
-        // الفرق بين الكميتين
         $quantityDifference = $newQuantity - $oldQuantity;
 
-        // المنتج المرتبط (سواء تغير المنتج أو بقي نفسه)
-        $productId = request()->product_id;
-        $product = Product::findOrFail($productId);
+        $product = Product::findOrFail($data['product_id']);
 
-        // معالجة حسب الفرق
         if ($quantityDifference > 0) {
-            // نحتاج خصم من المخزون
             if ($product->quantity < $quantityDifference) {
-                return redirect()->back()->withErrors([
+                return back()->withErrors([
                     'quantity' => __('messages.damaged.not_enough_stock', [
                         'available' => $product->quantity
                     ])
                 ])->withInput();
             }
 
-            // خصم الفرق من المخزون
-            $product->quantity -= $quantityDifference;
-            $product->save();
+            $product->decrement('quantity', $quantityDifference);
         } elseif ($quantityDifference < 0) {
-            // زادت الكمية في المخزون لأن التالف قل
-            $product->quantity += abs($quantityDifference);
-            $product->save();
+            $product->increment('quantity', abs($quantityDifference));
         }
 
-        // تحديث سجل التالف
         $damagedItem->update([
-            'product_id' => $productId,
-            'quantity' => $newQuantity,
-            'reason' => request()->reason,
+            'product_id' => $data['product_id'],
+            'quantity'   => $newQuantity,
+            'reason'     => $data['reason'],
         ]);
 
-        $page = request()->get('page', 1);
-        return to_route('damaged.index', ['page' => $page])
+        return to_route('damaged.index', ['page' => $request->get('page', 1)])
             ->with('success', __('messages.updated'));
     }
+
 
 
     /**

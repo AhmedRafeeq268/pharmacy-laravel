@@ -58,7 +58,7 @@
                                 type="number"
                                 name="items[{{ $index }}][quantity]"
                                 class="form-control"
-                                min="0" max="{{ $detail->quantity }}" required value="{{ old('items.' . $index . '.quantity') }}">
+                                min="0" max="{{ $detail->quantity }}"  value="{{ old('items.' . $index . '.quantity') }}">
                         </td>
                         <td>
                             <input
@@ -67,7 +67,6 @@
                                 class="form-control"
                                 step="0.01"
                                 min="0"
-                                required
                                 value="{{ old('items.' . $index . '.return_amount') }}"
                             >
                         </td>
@@ -80,7 +79,7 @@
                             >
                         </td>
                         <td>
-                            <select name="items[{{ $index }}][refunded_in_cash]" class="form-control" required>
+                            <select name="items[{{ $index }}][refunded_in_cash]" class="form-control" >
                                 <option value="0" {{ old('items.' . $index . '.refunded_in_cash') == '0' ? 'selected' : '' }}>لا</option>
                                 <option value="1" {{ old('items.' . $index . '.refunded_in_cash') == '1' ? 'selected' : '' }}>نعم</option>
                             </select>

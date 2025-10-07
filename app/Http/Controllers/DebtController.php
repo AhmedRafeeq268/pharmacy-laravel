@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use App\Models\CashBoxTransaction;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Maatwebsite\Excel\Facades\Excel;
 use PhpOffice\PhpSpreadsheet\Calculation\MathTrig\Sum;
 
@@ -20,6 +21,7 @@ class DebtController extends Controller
 
     public function index(Request $request)
     {
+        abort_if(Gate::denies('view-debts'), 403);
         $search = $request->input('search');
 
         $debtsQuery = Debt::select('customer_id', DB::raw('SUM(remaining_amount) as total_remaining'),DB::raw('SUM(total_amount) as total_debt'))
@@ -156,6 +158,7 @@ class DebtController extends Controller
 
     public function show( $customer_id)
     {
+        abort_if(Gate::denies('view-debts'), 403);
         $customer = Customer::findOrFail($customer_id);
 
         // جلب الديون المفتوحة مع الفواتير والمنتجات

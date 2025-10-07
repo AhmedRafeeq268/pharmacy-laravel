@@ -16,6 +16,8 @@
     <link href="{{ asset('css/style.css') }}" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
     <link href="{{ asset('libs/sweetalert2/sweetalert2.min.css') }}" rel="stylesheet">
+    <link href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css" rel="stylesheet">
+
     <!-- SweetAlert2 CSS -->
     {{-- <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet"> --}}
 
@@ -25,6 +27,13 @@
     @else
         <link href="{{ asset('css/en.css') }}" rel="stylesheet" />
     @endif
+    <style>
+    /* ضمان عدم اختفاء المحتوى تحت الهيدر */
+    .main_content_container {
+        padding-top: 70px; /* ارتفاع الهيدر + مسافة بسيطة */
+    }
+    </style>
+
 </head>
 
 <body>
@@ -141,71 +150,119 @@
                         </a>
                     </li>
 
-                    <li>
-                        <a href="#">
-                            <i class="bi bi-gear me-1"></i> @lang('messages.master.system_settings')
-                        </a>
-                        <ul class="drop_main_menu me-1">
-                            <li><a href="{{ route('codeTb.index') }}">@lang('messages.master.system_constants ')</a></li>
-                        </ul>
-                    </li>
+                        @can('system-settings')
+                            <li>
+                                <a href="#">
+                                        <i class="bi bi-gear me-1"></i> @lang('messages.master.system_settings')
+                                </a>
+                                <ul class="drop_main_menu">
+                                    @can('view-codesTb')
+                                        <li>
+                                            <a href="{{ route('codeTb.index') }}">
+                                                <i class="bi bi-gear me-1"></i> {{-- أيقونة للإعدادات/الثوابت --}}
+                                                @lang('messages.master.system_constants ')
+                                            </a>
+                                        </li>
+                                    @endcan
 
-                    <li>
-                        <a href="#">
-                            <i class="bi bi-person me-1"></i>@lang('messages.master.customer_management ')
-                        </a>
-                        <ul class="drop_main_menu">
-                            <li><a href="{{ route('customer.create') }}">@lang('messages.master.add_new ')</a></li>
-                            <li><a href="{{ route('customer.index') }}">@lang('messages.master.view_all ')</a></li>
-                        </ul>
-                    </li>
+                                    @can('view-users')
+                                        <li>
+                                            <a href="{{ route('admin.users.index') }}">
+                                                <i class="bi bi-people me-1"></i> {{-- هنا أيقونة المستخدمين --}}
+                                                @lang('messages.master.users')
+                                            </a>
+                                        </li>
+                                    @endcan
 
-                    <li>
-                        <a href="#">
-                            <i class="bi bi-people-fill me-1"></i> @lang('messages.master.employee_management ')
-                        </a>
-                        <ul class="drop_main_menu">
-                            <li><a href="{{ route('employee.create') }}">@lang('messages.master.add_new ')</a></li>
-                            <li><a href="{{ route('employee.index') }}">@lang('messages.master.view_all ')</a></li>
-                        </ul>
-                    </li>
+                                </ul>
+                            </li>
 
+                        @endcan
+
+                    @can('view-customer')
+                        <li>
+                            <a href="#">
+                                <i class="bi bi-person me-1"></i>@lang('messages.master.customer_management ')
+                            </a>
+                            <ul class="drop_main_menu">
+                                @can('create-customer')
+                                    <li><a href="{{ route('customer.create') }}">@lang('messages.master.add_new ')</a></li>
+                                @endcan
+
+                                @can('view-customer')
+                                    <li><a href="{{ route('customer.index') }}">@lang('messages.master.view_all ')</a></li>
+                                @endcan
+
+                            </ul>
+                        </li>
+                    @endcan
+
+                    @can('view-employee')
+                        <li>
+                            <a href="#">
+                                <i class="bi bi-people-fill me-1"></i> @lang('messages.master.employee_management ')
+                            </a>
+                            <ul class="drop_main_menu">
+                                @can('create-customer')
+                                    <li><a href="{{ route('employee.create') }}">@lang('messages.master.add_new ')</a></li>
+                                @endcan
+                                @can('view-customer')
+                                    <li><a href="{{ route('employee.index') }}">@lang('messages.master.view_all ')</a></li>
+                                @endcan
+                            </ul>
+                        </li>
+                    @endcan
                     <li>
-                        <a href="#">
+                          <a href="#">
                             <i class="bi bi-archive-fill me-1"></i>@lang('messages.master.warehouses_purchases ')
                         </a>
                         <ul class="drop_main_menu">
-                            <li>
-                                <a href="#">
-                                    <i class="bi bi-truck me-1"></i>@lang('messages.master.suppliers-management ')
-                                </a>
-                                <ul class="drop_main_menu">
-                                    <li><a href="{{ route('supplier.create') }}">@lang('messages.master.add_new ')</a></li>
-                                    <li><a href="{{ route('supplier.index') }}">@lang('messages.master.view_all ')</a></li>
-                                </ul>
-                            </li>
-
-                            <li>
-                                <a href="#">
-                                    <i class="bi bi-tags me-1"></i>@lang('messages.master.product_classification')
-                                </a>
-                                <ul class="drop_main_menu">
-                                    <li><a href="{{ route('productCategory.create') }}">@lang('messages.master.add_new ')</a></li>
-                                    <li><a href="{{ route('productCategory.index') }}">@lang('messages.master.view_all ')</a></li>
-                                </ul>
-                            </li>
-
-                            <li>
-                                <a href="#">
-                                    <i class="bi bi-box-seam me-1"></i>@lang('messages.master.product_management')
-                                </a>
-                                <ul class="drop_main_menu">
-                                    <li><a href="{{ route('product.create') }}">@lang('messages.master.add_new ')</a></li>
-                                    <li><a href="{{ route('product.index') }}">@lang('messages.master.view_all ')</a></li>
-                                </ul>
-                            </li>
-
-                            <li>
+                            @can('view-supplier')
+                                <li>
+                                    <a href="#">
+                                        <i class="bi bi-truck me-1"></i>@lang('messages.master.suppliers-management ')
+                                    </a>
+                                    <ul class="drop_main_menu">
+                                        @can('create-supplier')
+                                            <li><a href="{{ route('supplier.create') }}">@lang('messages.master.add_new ')</a></li>
+                                        @endcan
+                                        @can('view-supplier')
+                                            <li><a href="{{ route('supplier.index') }}">@lang('messages.master.view_all ')</a></li>
+                                        @endcan
+                                    </ul>
+                                </li>
+                            @endcan
+                            @can('view-productCategory')
+                                <li>
+                                    <a href="#">
+                                        <i class="bi bi-tags me-1"></i>@lang('messages.master.product_classification')
+                                    </a>
+                                    <ul class="drop_main_menu">
+                                        @can('create-productCategory')
+                                            <li><a href="{{ route('productCategory.create') }}">@lang('messages.master.add_new ')</a></li>
+                                        @endcan
+                                        @can('view-productCategory')
+                                            <li><a href="{{ route('productCategory.index') }}">@lang('messages.master.view_all ')</a></li>
+                                        @endcan
+                                    </ul>
+                                </li>
+                            @endcan
+                            @can('view-product')
+                                <li>
+                                    <a href="#">
+                                        <i class="bi bi-box-seam me-1"></i>@lang('messages.master.product_management')
+                                    </a>
+                                    <ul class="drop_main_menu">
+                                        @can('create-product')
+                                            <li><a href="{{ route('product.create') }}">@lang('messages.master.add_new ')</a></li>
+                                        @endcan
+                                        @can('view-product')
+                                            <li><a href="{{ route('product.index') }}">@lang('messages.master.view_all ')</a></li>
+                                        @endcan
+                                    </ul>
+                                </li>
+                            @endcan
+                            {{-- <li>
                                 <a href="#">
                                     <i class="bi bi-receipt me-1"></i>@lang('messages.master.bills')
                                 </a>
@@ -213,49 +270,81 @@
                                     <li><a href="{{ route('bill.create') }}">@lang('messages.master.add_new ')</a></li>
                                     <li><a href="{{ route('bill.index') }}">@lang('messages.master.view_all ')</a></li>
                                 </ul>
-                            </li>
+                            </li> --}}
 
-
-                            <li><a href="#"><i class="bi bi-cart-plus me-1"></i> @lang('messages.master.purchasing')</a></li>
-                            <li><a href="#"><i class="bi bi-receipt me-1"></i>@lang('messages.master.sales_operations')</a></li>
-                            <li><a href="#"><i class="bi bi-boxes me-1"></i>@lang('messages.master.stors_balance')</a></li>
+                            @can('view-purchase-bill')
+                                <li>
+                                    <a href="#">
+                                        <i class="bi bi-cart-plus me-1"></i> @lang('messages.master.purchasing')
+                                    </a>
+                                    <ul class="drop_main_menu">
+                                        @can('create-purchase-bill')
+                                            <li><a href="{{ route('bill.create') }}">@lang('messages.master.add_new ')</a></li>
+                                        @endcan
+                                        @can('view-purchase-bill')
+                                            <li><a href="{{ route('bill.index') }}">@lang('messages.master.view_all ')</a></li>
+                                        @endcan
+                                    </ul>
+                                </li>
+                            @endcan
+                            @can('view-pos-bill')
+                                <li><a href="{{ route('pos.index') }}"><i class="bi bi-receipt me-1"></i>@lang('messages.master.sales_operations')</a></li>
+                            @endcan
+                                <li><a href="{{ route('balanceStore.index') }}"><i class="bi bi-boxes me-1"></i>@lang('messages.master.stors_balance')</a></li>
                             {{-- <li><a href="#"><i class="bi bi-credit-card-2-front me-1"></i>@lang('messages.master.pos')</a></li> --}}
-                            <li>
-                                <a href="#">
-                                    <i class="bi bi-credit-card-2-front me-1"></i>@lang('messages.master.pos')
-                                </a>
-                                <ul class="drop_main_menu">
-                                    <li><a href="{{ route('pos.create') }}">@lang('messages.master.add_new ')</a></li>
-                                    <li><a href="{{ route('pos.index') }}">@lang('messages.master.view_all ')</a></li>
-                                </ul>
-                            </li>
-                            <li>
-                                <a href="#">
-                                    <i class="bi bi-arrow-return-left me-1"></i>@lang('messages.master.purchaseReturns')
-                                </a>
-                                <ul class="drop_main_menu">
-                                    <li><a href="{{ route('purchaseReturns.create') }}">@lang('messages.master.add_new ')</a></li>
-                                    <li><a href="{{ route('purchaseReturns.index') }}">@lang('messages.master.view_all ')</a></li>
-                                </ul>
-                            </li>
-                            <li>
-                                <a href="#">
-                                    <i class="bi bi-arrow-return-left me-1"></i>@lang('messages.master.posReturns')
-                                </a>
-                                <ul class="drop_main_menu">
-                                    <li><a href="{{ route('salesReturn.create') }}">@lang('messages.master.add_new ')</a></li>
-                                    <li><a href="{{ route('salesReturn.index') }}">@lang('messages.master.view_all ')</a></li>
-                                </ul>
-                            </li>
-                            <li>
-                                <a href="#">
-                                    <i class="bi bi-trash me-1 text-danger"></i>@lang('messages.master.damaged')
-                                </a>
-                                <ul class="drop_main_menu">
-                                    <li><a href="{{ route('damaged.create') }}">@lang('messages.master.add_new ')</a></li>
-                                    <li><a href="{{ route('damaged.index') }}">@lang('messages.master.view_all ')</a></li>
-                                </ul>
-                            </li>
+
+                            @can('create-pos-bill')
+                                <li>
+                                    <a href="{{ route('pos.create') }}">
+                                        <i class="bi bi-credit-card-2-front me-1"></i>@lang('messages.master.pos')
+                                    </a>
+                                </li>
+                            @endcan
+                            @can('view-purchase-return')
+                                <li>
+                                    <a href="#">
+                                        <i class="bi bi-arrow-return-left me-1"></i>@lang('messages.master.purchaseReturns')
+                                    </a>
+                                    <ul class="drop_main_menu">
+                                        @can('crete-purchase-return')
+                                            <li><a href="{{ route('purchaseReturns.create') }}">@lang('messages.master.add_new ')</a></li>
+                                        @endcan
+                                        @can('view-purchase-return')
+                                            <li><a href="{{ route('purchaseReturns.index') }}">@lang('messages.master.view_all ')</a></li>
+                                        @endcan
+                                    </ul>
+                                </li>
+                            @endcan
+                            @can('view-customer-return')
+                                <li>
+                                    <a href="#">
+                                        <i class="bi bi-arrow-return-left me-1"></i>@lang('messages.master.posReturns')
+                                    </a>
+                                    <ul class="drop_main_menu">
+                                        @can('create-customer-return')
+                                            <li><a href="{{ route('salesReturn.create') }}">@lang('messages.master.add_new ')</a></li>
+                                        @endcan
+                                        @can('view-customer-return')
+                                            <li><a href="{{ route('salesReturn.index') }}">@lang('messages.master.view_all ')</a></li>
+                                        @endcan
+                                    </ul>
+                                </li>
+                            @endcan
+                            @can('view-damaged-item')
+                                <li>
+                                    <a href="#">
+                                        <i class="bi bi-trash me-1 text-danger"></i>@lang('messages.master.damaged')
+                                    </a>
+                                    <ul class="drop_main_menu">
+                                        @can('create-damaged-item')
+                                            <li><a href="{{ route('damaged.create') }}">@lang('messages.master.add_new ')</a></li>
+                                        @endcan
+                                        @can('view-damaged-item')
+                                            <li><a href="{{ route('damaged.index') }}">@lang('messages.master.view_all ')</a></li>
+                                        @endcan
+                                    </ul>
+                                </li>
+                            @endcan
                         </ul>
                     </li>
 
@@ -268,22 +357,47 @@
                             <li><a href="">@lang('messages.master.view_all ')</a></li>
                         </ul>
                     </li>
-                    <li>
-                        <a href="{{ route('debts.index') }}">
-                            <i class="bi bi-receipt me-1"></i>@lang('messages.master.debts')
-                        </a>
+                    @can('view-debts')
+                        <li>
+                            <a href="{{ route('debts.index') }}">
+                                <i class="bi bi-receipt me-1"></i>@lang('messages.master.debts')
+                            </a>
 
-                    </li>
-                    <li>
-                        <a href="#">
-                            <i class="bi bi-wallet me-1"></i>@lang('messages.master.expenses')
-                        </a>
-                        <ul class="drop_main_menu">
-                            <li><a href="{{ route('expenses.create') }}">@lang('messages.master.add_new ')</a></li>
-                            <li><a href="{{ route('expenses.index') }}">@lang('messages.master.view_all ')</a></li>
-                        </ul>
+                        </li>
+                    @endcan
+                    @can('view-expenses')
+                        <li>
+                            <a href="#">
+                                <i class="bi bi-wallet me-1"></i>@lang('messages.master.expenses')
+                            </a>
+                            <ul class="drop_main_menu">
+                                @can('create-expenses')
+                                    <li><a href="{{ route('expenses.create') }}">@lang('messages.master.add_new ')</a></li>
+                                @endcan
+                                @can('view-expenses')
+                                    <li><a href="{{ route('expenses.index') }}">@lang('messages.master.view_all ')</a></li>
+                                @endcan
+                            </ul>
 
+                        </li>
+                    @endcan
+                    <li>
+                        <a href="{{ route("reports.profitLossFilter") }}">
+                            تقرير الربح والخسارة
+                        </a>
                     </li>
+                            <ul class="sidebar-menu">
+                                {{-- رابط لوحة الإدارة الرئيسية --}}
+                                <li class="{{ request()->is('admin/dashboard') ? 'active' : '' }}">
+                                    <a href="{{ route('admin.dashboard') }}">
+                                        <i class="fa fa-dashboard"></i>
+                                        {{ __('لوحة التحكم') }}
+                                    </a>
+                                </li>
+
+
+                            </ul>
+
                 </ul>
             </div>
         </div>
@@ -294,17 +408,26 @@
     @yield('content')
 
 </div>
+<!-- 1️⃣ jQuery حديث -->
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 
-<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-<script type="text/javascript" src="{{ asset('/js/jquery-2.1.4.min.js') }}"></script>
-{{-- <script src="{{ asset('/js/bootstrap.min.js') }}"></script> --}}
+<!-- 2️⃣ Popper.js (ضروري للـ Bootstrap) -->
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js"></script>
 
+<!-- 3️⃣ Bootstrap JS bundle (يشمل Popper) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- 4️⃣ Bootstrap Toggle (اختياري إذا تستخدمه) -->
+<script src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>
+
+<!-- 5️⃣ JS الخاص بالمشروع -->
 <script src="{{ asset('/js/js.js') }}"></script>
+
+<!-- 6️⃣ SweetAlert2 -->
 <script src="{{ asset('libs/sweetalert2/sweetalert2@11.js') }}"></script>
-<!-- SweetAlert2 JS -->
-{{-- <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> --}}
+
+<!-- 7️⃣ Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 
 <!-- تفعيل tooltips بوتستراب 5 -->

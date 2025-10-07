@@ -2,22 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\ProductCategory;
 use Illuminate\Http\Request;
+use App\Models\ProductCategory;
+use Illuminate\Support\Facades\Gate;
+use App\Http\Requests\StoreProductCategoryRequest;
+use App\Http\Requests\UpdateProductCategoryRequest;
 
 class ProductCategoryController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    // public function index()
-    // {
-    //     $productCategorys=ProductCategory::orderBy('id', 'desc')->paginate(8);
-    //     return view('productCategory.index',['productCategorys'=>$productCategorys]);
-    // }
-
     public function index(Request $request)
     {
+        abort_if(Gate::denies('view-productCategory'), 403);
         $query = ProductCategory::query();
 
         if ($request->filled('search')) {
@@ -38,28 +33,15 @@ class ProductCategoryController extends Controller
      */
     public function create()
     {
+        abort_if(Gate::denies('create-productCategory'), 403);
         return view('productCategory.create');
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(){
-        request()->validate([
-            'name' => ['required'],
-            'description' => ['required'],
-
-        ]);
-
-        // $data = request()->all();
-        $name = request()->name;
-        $description = request()->description;
-
-        ProductCategory::create([
-            'name'=>$name,
-            'description'=>$description,
-
-        ]);
+    public function store(StoreProductCategoryRequest $request){
+        ProductCategory::create($request->validated());
         return to_route('productCategory.create')->with('success', __('messages.added'));
     }
 
@@ -67,6 +49,7 @@ class ProductCategoryController extends Controller
      * Display the specified resource.
      */
     public function show($id){
+        abort_if(Gate::denies('view-productCategory'), 403);
         $productCategory = ProductCategory::findOrFail($id);
         return view('productCategory.show',compact('productCategory'));
     }
@@ -75,6 +58,7 @@ class ProductCategoryController extends Controller
      * Show the form for editing the specified resource.
      */
     public function edit($productCategoryId){
+        abort_if(Gate::denies('edit-productCategory'), 403);
         $singleProductCategoryFromDB=ProductCategory::findOrFail($productCategoryId);
         return view('productCategory.edit',['productCategory'=>$singleProductCategoryFromDB]);
     }
@@ -82,22 +66,11 @@ class ProductCategoryController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update($productCategoryId){
-        request()->validate([
-            'name' => ['required'],
-            'description' => ['required'],
-
-        ]);
-
-        // $data = request()->all();
-        $name = request()->name;
-        $description = request()->description;
+    public function update(UpdateProductCategoryRequest $request,$productCategoryId){
 
         $productCategory = productCategory::findOrFail($productCategoryId);
-        $productCategory->update([
-            'name' => $name,
-            'description' => $description,
-        ]);
+        $productCategory::update($request->validated());
+
         $page = request()->get('page', 1);
         return to_route('productCategory.index',['page' => $page])
         ->with('success', __('messages.updated'));

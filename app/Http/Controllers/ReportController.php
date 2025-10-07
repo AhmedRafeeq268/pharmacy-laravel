@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\CashBoxTransaction;
 use App\Models\DamagedItem;
+use App\Models\PosBill;
 use Illuminate\Http\Request;
 use App\Models\PosBillDetails;
 
@@ -26,13 +27,14 @@ class ReportController extends Controller
         $totalExpenses = CashBoxTransaction::where('type', 'expense')
                                            ->whereBetween('created_at', [$from, $to])
                                            ->sum('amount');
+        $totalDiscount = PosBill::whereBetween('created_at', [$from, $to])->sum('discount');
 
         $totalCostItemDamaged = DamagedItem::whereBetween('damaged_items.created_at', [$from, $to])
         ->join('products', 'damaged_items.product_id', '=', 'products.id')
         ->selectRaw('SUM(damaged_items.quantity * products.unit_price) as total')
         ->value('total') ?? 0;
 
-        $netProfit = $totalProfit - abs($totalExpenses) - $totalCostItemDamaged;
+        $netProfit = $totalProfit - abs($totalExpenses) - $totalCostItemDamaged - $totalDiscount;
 
         $productProfits = PosBillDetails::selectRaw('product_id, SUM(quantity) as total_qty, SUM(profit) as total_profit')
                         ->whereBetween('created_at', [$from, $to])
@@ -41,7 +43,7 @@ class ReportController extends Controller
                         ->get();
 
         return view('reports.profitLoss', compact(
-            'from','to','totalSales','totalProfit','totalExpenses','netProfit','productProfits','totalCostItemDamaged'
+            'from','to','totalSales','totalProfit','totalExpenses','netProfit','productProfits','totalCostItemDamaged','totalDiscount'
         ));
     }
 

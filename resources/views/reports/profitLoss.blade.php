@@ -47,6 +47,7 @@
     <div class="row"><span>{{ __('messages.reports.total_profit') }}</span><span>{{ number_format($totalProfit) }}</span></div>
     <div class="row"><span>{{ __('messages.reports.expenses') }}</span><span>{{ number_format($totalExpenses) }}</span></div>
     <div class="row"><span>{{ __('messages.reports.damaged') }}</span><span>{{ number_format($totalCostItemDamaged) }}</span></div>
+    <div class="row"><span>{{ __('messages.reports.discounts') }}</span><span>{{ number_format($totalDiscount) }}</span></div>
     <div class="row b"><span>{{ __('messages.reports.net_profit') }}</span><span>{{ number_format($netProfit) }}</span></div>
 
     <hr>

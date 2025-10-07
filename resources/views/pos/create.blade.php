@@ -11,20 +11,6 @@
             <h1 class="heading_title" style="margin-top: 90px;">
                 @lang('messages.pos.create_pos')
             </h1>
-
-            {{-- زر إغلاق الصندوق --}}
-            {{-- <div class="row mt-4">
-                <div class="col-auto">
-                    <form method="POST" action="{{ route('pos.closeCashbox') }}" onsubmit="return confirm('{{ __('messages.pos.confirm_close_cashbox') }}')">
-                        @csrf
-                        <input type="hidden" name="employee_id" value="{{ Auth::id() }}">
-                        <button type="submit" class="btn btn-danger d-flex align-items-center gap-2">
-                            <i class="bi bi-lock-fill"></i>
-                            @lang('messages.pos.close_cashbox')
-                        </button>
-                    </form>
-                </div>
-            </div> --}}
             <input type="hidden" name="session_id" value="{{ $currentSession->id }}">
 
             <div class="col-auto">
@@ -33,7 +19,6 @@
                     @lang('messages.pos.close_cashbox')
                 </button>
             </div>
-            {{-- @dd($currentSession) --}}
             <input type="hidden" name="session_id" value="{{ $currentSession->id }}">
 
             <div class="form">

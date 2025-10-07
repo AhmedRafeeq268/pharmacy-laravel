@@ -4,15 +4,31 @@ namespace App\Http\Controllers;
 
 use App\Models\BalanceStore;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 
 class BalanceStoreController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        abort_if(Gate::denies('view-balanceStore'), 403);
+         $query = BalanceStore::query();
+
+        if ($request->filled('search')) {
+            $query->where('product_name', 'like', '%' . $request->search . '%')
+                ->orWhere('manufacture', 'like', '%' . $request->search . '%');
+        }
+
+        $balances = $query->orderBy('id', 'desc')->paginate(8)->appends($request->all());
+
+        if ($request->ajax()) {
+            return view('balanceStore._table', compact('balances'))->render();
+        }
+
+        return view('balanceStore.index', compact('balances'));
+
     }
 
     /**

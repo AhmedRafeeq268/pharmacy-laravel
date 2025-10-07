@@ -11,8 +11,11 @@ use App\Models\PurchasesBills;
 use App\Models\CashBoxTransaction;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\PurchaseReturnsExport;
+use App\Http\Requests\StoreParchaseReturnRequest;
+use App\Http\Requests\UpdateParchaseReturnRequest;
 
 class PurchaseReturnController extends Controller
 {
@@ -21,6 +24,7 @@ class PurchaseReturnController extends Controller
      */
     public function index(Request $request)
     {
+        abort_if(Gate::denies('view-purchase-return'), 403);
         $search = $request->input('search');
 
         $purchaseReturns = PurchaseReturn::with(['purchaseBill','supplier','product','creator'])
@@ -95,6 +99,7 @@ class PurchaseReturnController extends Controller
      */
     public function create(Request $request)
     {
+        abort_if(Gate::denies('create-purchase-return'), 403);
         // فقط الفواتير التي لها مورد معرف
         $bills = PurchasesBills::with('supplier', 'details.product')
             ->whereHas('supplier')  // ضمان وجود المورد
@@ -118,24 +123,15 @@ class PurchaseReturnController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreParchaseReturnRequest $request)
     {
         // التحقق من صحة البيانات
-        $request->validate([
-            'purchase_bill_id' => 'required|exists:purchases_bills,id',
-            'supplier_id' => 'required|exists:suppliers,id',
-            'items' => 'required|array|min:1',
-            'items.*.product_id' => 'required|exists:products,id',
-            'items.*.quantity' => 'required|integer|min:0',
-            'items.*.return_amount' => 'required|numeric|min:0',
-            'items.*.reason' => 'nullable|string|max:255',
-            'items.*.refunded_in_cash' => 'required|boolean',
-        ]);
+        $data = $request->validated();
 
         // استخراج القيم من الطلب
-        $purchase_bill_id = $request->purchase_bill_id;
-        $supplier_id = $request->supplier_id;
-        $items = $request->items;
+        $purchase_bill_id = $data['purchase_bill_id'];
+        $supplier_id = $data['supplier_id'];
+        $items = $data['items'];
 
         // المستخدم الحالي
         $user_id = Auth::id() ?? 1;
@@ -155,33 +151,35 @@ class PurchaseReturnController extends Controller
                 $quantity = $item['quantity'];
                 $return_amount = $item['return_amount'];
                 $reason = $item['reason'] ?? null;
-                $refunded_in_cash = $item['refunded_in_cash'];
+                $refunded_in_cash = $item['refunded_in_cash'] ?? false;
 
                 // إنشاء السجل في purchase_returns
                 PurchaseReturn::create([
                     'purchase_bill_id' => $purchase_bill_id,
-                    'supplier_id' => $supplier_id,
-                    'product_id' => $product_id,
-                    'quantity' => $quantity,
-                    'return_amount' => $return_amount,
-                    'reason' => $reason,
+                    'supplier_id'      => $supplier_id,
+                    'product_id'       => $product_id,
+                    'quantity'         => $quantity,
+                    'return_amount'    => $return_amount,
+                    'reason'           => $reason,
                     'refunded_in_cash' => $refunded_in_cash,
-                    'created_by' => $user_id,
-                    'session_id' => $currentSessionId,
-
+                    'created_by'       => $user_id,
+                    'session_id'       => $currentSessionId,
                 ]);
 
                 // خصم الكمية من المخزون
                 Product::where('id', $product_id)->decrement('quantity', $quantity);
 
                 // إذا تم رد نقداً → سجل حركة في الصندوق
-                if ($refunded_in_cash && $currentSessionId) {
+                if ($refunded_in_cash) {
+                    if (!$currentSessionId) {
+                        throw new \Exception('لا توجد جلسة صندوق مفتوحة لإرجاع المبلغ نقداً.');
+                    }
+
                     CashBoxTransaction::create([
                         'session_id' => $currentSessionId,
-                        'type' => 'expense',
-                        'amount' => $return_amount,
-                        'note' => 'إرجاع للمورد (منتج ID: ' . $product_id . ')',
-                        'created_at' => now(),
+                        'type'       => 'expense',
+                        'amount'     => $return_amount,
+                        'note'       => 'إرجاع للمورد (منتج ID: ' . $product_id . ')',
                     ]);
                 }
             }
@@ -195,10 +193,12 @@ class PurchaseReturnController extends Controller
         }
     }
 
+
     /**
      * Display the specified resource.
      */
      public function show($id){
+        abort_if(Gate::denies('view-purchase-return'), 403);
         $purchaseReturn = PurchaseReturn::with('purchaseBill','supplier','product','creator')->findOrFail($id);
         return view('purchaseReturns.show',compact('purchaseReturn'));
     }
@@ -208,6 +208,7 @@ class PurchaseReturnController extends Controller
      */
     public function edit($purchaseReturnId)
     {
+        abort_if(Gate::denies('edit-purchase-return'), 403);
         $purchaseReturn = PurchaseReturn::findOrFail($purchaseReturnId);
         return view('purchaseReturns.edit',compact('purchaseReturn'));
     }
@@ -215,13 +216,9 @@ class PurchaseReturnController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request ,$purchaseReturnId){
-        $request->validate([
-        'quantity' => 'required|integer|min:1',
-        'return_amount' => 'required|numeric|min:0',
-        'reason' => 'nullable|string|max:255',
-        'refunded_in_cash' => 'required|boolean',
-        ]);
+    public function update(UpdateParchaseReturnRequest $request, $purchaseReturnId)
+    {
+        $data = $request->validated();
 
         $purchaseReturn = PurchaseReturn::findOrFail($purchaseReturnId);
 
@@ -231,50 +228,59 @@ class PurchaseReturnController extends Controller
         $oldRefunded = $purchaseReturn->refunded_in_cash;
         $productId = $purchaseReturn->product_id;
 
-        // القيم الجديدة من الطلب
-        $newQuantity = $request->quantity;
-        $newAmount = $request->return_amount;
-        $newRefunded = $request->refunded_in_cash;
+        // القيم الجديدة
+        $newQuantity = $data['quantity'];
+        $newAmount = $data['return_amount'];
+        $newRefunded = $data['refunded_in_cash'] ?? false;
+        $reason = $data['reason'] ?? null;
 
         // تحديث المرتجع
         $purchaseReturn->update([
             'quantity' => $newQuantity,
             'return_amount' => $newAmount,
-            'reason' => $request->reason,
+            'reason' => $reason,
             'refunded_in_cash' => $newRefunded,
             'edited_by' => Auth::id() ?? 1,
         ]);
 
-        // تعديل المخزون (فرق الكمية)
+        // تعديل المخزون
         $quantityDiff = $newQuantity - $oldQuantity;
         if ($quantityDiff != 0) {
-            // إذا الفرق موجب ⇒ نخصم من المخزون
-            // إذا الفرق سالب ⇒ نعيد للمخزون
-            Product::where('id', $productId)->increment('quantity', -$quantityDiff);
+            $product = Product::findOrFail($productId);
+            $product->quantity -= $quantityDiff;
+            if ($product->quantity < 0) {
+                return back()->withErrors(['quantity' => 'الكمية في المخزون لا تكفي للتعديل.']);
+            }
+            $product->save();
         }
 
-        // تعديل حركة الصندوق إذا كان تم رد نقداً
-        $sessionId = PosSession::where('user_id', Auth::id())
-                       ->where('status', 'open')
-                       ->latest()
-                       ->value('id');
+        // تعديل حركة الصندوق
         if ($newRefunded) {
+            $sessionId = PosSession::where('user_id', Auth::id())
+                        ->where('status', 'open')
+                        ->latest()
+                        ->value('id');
+            if (!$sessionId) {
+                return back()->withErrors(['session' => 'لا توجد جلسة صندوق مفتوحة لتعديل المرتجع النقدي.']);
+            }
+
             $amountDiff = $newAmount - $oldAmount;
-            if ($amountDiff != 0 && $sessionId) {
-                $type = $amountDiff > 0 ? 'expense' : 'income'; // زيادة = expense، نقصان = income
+            if ($amountDiff != 0) {
+                $type = $amountDiff > 0 ? 'expense' : 'income';
                 CashBoxTransaction::create([
                     'session_id' => $sessionId,
                     'type' => $type,
                     'amount' => abs($amountDiff),
                     'note' => 'تعديل مبلغ مرتجع المورد (ID: ' . $productId . ')',
-                    'created_at' => now(),
                 ]);
             }
         }
+
         $page = $request->get('page', 1);
-        return to_route('purchaseReturns.index',['page' => $page])
-        ->with('success', __('messages.updated'));
+        return to_route('purchaseReturns.index', ['page' => $page])
+            ->with('success', __('messages.updated'));
     }
+
 
 
     /**

@@ -9,12 +9,16 @@ use App\Models\Employee;
 use App\Models\BankAccount;
 use Illuminate\Http\Request;
 use App\Exports\EmployeesExport;
+use Illuminate\Support\Facades\Gate;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Http\Requests\StoreEmployeeRequest;
+use App\Http\Requests\UpdateEmployeeRequest;
 
 class EmployeeController extends Controller
 {
     public function index(Request $request)
     {
+        abort_if(Gate::denies('view-employee'), 403);
         $search = $request->input('search');
 
         $employees = Employee::with(['bankAccount.bank','bankAccount.wallet'])->when($search, function ($query, $search) {
@@ -87,6 +91,7 @@ class EmployeeController extends Controller
      */
     public function create()
     {
+        abort_if(Gate::denies('create-employee'), 403);
         $banks = CodesTb::where('main_cd',1)->where('sub_cd', '>', 0)->get();
         $wallets = CodesTb::where('main_cd',6)->where('sub_cd', '>', 0)->get();
         return view('employee.create', compact("banks","wallets"));
@@ -95,45 +100,27 @@ class EmployeeController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-        public function store(){
-            request()->validate([
-                'name' => ['required'],
-                'phone' => ['required'],
-                'email' => ['required'],
-                'id_card' => ['required'],
-                'bank_account' => ['nullable', 'numeric'],
-                'bank_name' => ['nullable', 'integer'],
-                'wallet_phone' => ['nullable', 'numeric'],
-                'wallet_type' => ['nullable', 'integer'],
-            ]);
+    public function store(StoreEmployeeRequest $request)
+    {
+        // إنشاء الموظف
+        $employee = Employee::create($request->only([
+            'name',
+            'phone',
+            'email',
+            'id_card',
+        ]));
 
-            // $data = request()->all();
-            $name = request()->name;
-            $phone = request()->phone;
-            $email = request()->email;
-            $id_card = request()->id_card;
-            $bank_account = request()->bank_account;
-            $bank_name = request()->bank_name;
-            $wallet_phone = request()->wallet_phone;
-            $wallet_type = request()->wallet_type;
+        // إنشاء الحساب البنكي / المحفظة
+        BankAccount::create([
+            'IPAN'               => $request->bank_account,
+            'bank_cd'            => $request->bank_name,
+            'wallet_phone_number'=> $request->wallet_phone,
+            'wallet_cd'          => $request->wallet_type,
+            'accountable_type_cd'=> 1, // ممكن تتحول لعلاقة Polymorphic لاحقًا
+            'accountable_id'     => $employee->id,
+        ]);
 
-
-           $employee = Employee::create([
-                'name'=>$name,
-                'phone'=>$phone,
-                'email'=>$email,
-                'id_card'=>$id_card,
-            ]);
-
-            BankAccount::create([
-                'IPAN'=>$bank_account,
-                'bank_cd'=>$bank_name,
-                'wallet_phone_number'=>$wallet_phone,
-                'wallet_cd'=>$wallet_type,
-                'accountable_type_cd'=>1,
-                'accountable_id'=>$employee->id,
-            ]);
-            return to_route('employee.create')->with('success', __('messages.added'));
+        return to_route('employee.create')->with('success', __('messages.added'));
     }
 
 
@@ -141,6 +128,7 @@ class EmployeeController extends Controller
      * Display the specified resource.
      */
     public function show($id){
+        abort_if(Gate::denies('view-employee'), 403);
         $employee = Employee::with('bankAccount')->findOrFail($id);
         return view('employee.show',compact('employee'));
     }
@@ -148,37 +136,29 @@ class EmployeeController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-        public function edit($employeeId){
-            $employee=Employee::findOrFail($employeeId);
-            $banks = CodesTb::where('main_cd',1)->where('sub_cd', '>', 0)->get();
-            $wallets = CodesTb::where('main_cd',6)->where('sub_cd', '>', 0)->get();
-            return view('employee.edit',compact('employee','banks','wallets'));
-        }
+    public function edit($employeeId)
+    {
+        abort_if(Gate::denies('edit-employee'), 403);
+        $employee=Employee::findOrFail($employeeId);
+        $banks = CodesTb::where('main_cd',1)->where('sub_cd', '>', 0)->get();
+        $wallets = CodesTb::where('main_cd',6)->where('sub_cd', '>', 0)->get();
+        return view('employee.edit',compact('employee','banks','wallets'));
+    }
 
 
     /**
      * Update the specified resource in storage.
      */
-    public function update($employeeId)
+    public function update(UpdateEmployeeRequest $request, $employeeId)
     {
-        request()->validate([
-            'name' => ['required'],
-            'phone' => ['required'],
-            'email' => ['required'],
-            'id_card' => ['required'],
-            'bank_account' => ['nullable', 'numeric'],
-            'bank_name' => ['nullable', 'integer'],
-            'wallet_phone' => ['nullable', 'numeric'],
-            'wallet_type' => ['nullable', 'integer'],
-        ]);
-
         $employee = Employee::findOrFail($employeeId);
 
+        // تحديث بيانات الموظف
         $employee->update([
-            'name' => request()->name,
-            'phone' => request()->phone,
-            'email' => request()->email,
-            'id_card' => request()->id_card,
+            'name' => $request->name,
+            'phone' => $request->phone,
+            'email' => $request->email,
+            'id_card' => $request->id_card,
         ]);
 
         // تحديث أو إنشاء بيانات الحساب البنكي
@@ -190,17 +170,18 @@ class EmployeeController extends Controller
             $bankAccount->accountable_type_cd = 1; // 1 معناها موظف
         }
 
-        $bankAccount->IPAN = request()->bank_account;
-        $bankAccount->bank_cd = request()->bank_name;
-        $bankAccount->wallet_phone_number = request()->wallet_phone;
-        $bankAccount->wallet_cd = request()->wallet_type;
-
+        $bankAccount->IPAN = $request->bank_account;
+        $bankAccount->bank_cd = $request->bank_name;
+        $bankAccount->wallet_phone_number = $request->wallet_phone;
+        $bankAccount->wallet_cd = $request->wallet_type;
         $bankAccount->save();
 
-        $page = request()->get('page', 1);
+        $page = $request->get('page', 1);
+
         return to_route('employee.index', ['page' => $page])
             ->with('success', __('messages.updated'));
     }
+
 
 
     /**
